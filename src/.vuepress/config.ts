@@ -1,6 +1,7 @@
 import { defineUserConfig } from "vuepress";
 import { docsearchPlugin } from '@vuepress/plugin-docsearch'
 import { commentPlugin } from '@vuepress/plugin-comment'
+import { feedPlugin } from '@vuepress/plugin-feed'
 
 import theme from "./theme.js";
 
@@ -63,5 +64,11 @@ export default defineUserConfig({
       category: "Announcements",
       categoryId: "DIC_kwDOPvRPPs4Cva9W",
     })
+
+    feedPlugin({
+      atom: true,
+      rss: true,
+      icon: 'https://vip.123pan.cn/1844935313/obsidian/blog-logo.jpg' // 一个小的图标，显示在订阅列表中
+    }),
   ],
 });
