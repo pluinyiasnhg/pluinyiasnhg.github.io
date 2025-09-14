@@ -1,5 +1,6 @@
 import { defineUserConfig } from "vuepress";
 import { docsearchPlugin } from '@vuepress/plugin-docsearch'
+import { commentPlugin } from '@vuepress/plugin-comment'
 
 import theme from "./theme.js";
 
