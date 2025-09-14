@@ -4,19 +4,19 @@ export default sidebar({
   "/": [
     "",
     {
-      text: "Demo",
+      text: "vuepress theme hope",
       icon: "laptop-code",
       prefix: "demo/",
       link: "demo/",
       children: "structure",
     },
     {
-      text: "Articles",
+      text: "代码笔记",
       icon: "book",
-      prefix: "posts/",
+      prefix: "codeVault/",
       children: "structure",
     },
-    "intro",
+    // "intro",
     {
       text: "Slides",
       icon: "person-chalkboard",
