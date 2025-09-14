@@ -70,5 +70,6 @@ export default defineUserConfig({
       rss: true,
       icon: 'https://vip.123pan.cn/1844935313/obsidian/blog-logo.jpg' // 一个小的图标，显示在订阅列表中
     }),
+
   ],
 });
