@@ -59,9 +59,9 @@ export default defineUserConfig({
     commentPlugin({
       provider: 'Giscus',
       repo: "pluinyiasnhg/Giscus-for-vuepress",
-      repoID: "R_kgDOPvhPBw",
+      repoId: "R_kgDOPvhPBw",
       category: "Announcements",
-      categoryID: "DIC_kwDOPvhPB84Cva7e",
+      categoryId: "DIC_kwDOPvhPB84Cva7e",
     })
   ],
 });

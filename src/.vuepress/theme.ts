@@ -20,7 +20,7 @@ export default hopeTheme({
   fullscreen: true,
 
   // 纯净模式
-  pure: true,
+  // pure: true,
 
   docsDir: "src",
 
