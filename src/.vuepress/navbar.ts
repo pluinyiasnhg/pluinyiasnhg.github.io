@@ -2,7 +2,11 @@ import { navbar } from "vuepress-theme-hope";
 
 export default navbar([
   "/",
-  "/demo/",
+  {
+    text: "样例",
+    link: "/demo/README",
+    icon: "laptop-code"
+  }
   "/codeVault/"
   // {
   //   text: "Posts",

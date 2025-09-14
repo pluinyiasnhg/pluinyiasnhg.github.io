@@ -1,6 +1,8 @@
 ---
 icon: circle-info
 cover: /assets/images/cover3.jpg
+article: false
+index: false
 ---
 
 # 介绍

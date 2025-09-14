@@ -18,7 +18,7 @@ export default sidebar({
     },
     // "intro",
     {
-      text: "Slides",
+      text: "幻灯片",
       icon: "person-chalkboard",
       link: "https://ecosystem.vuejs.press/plugins/markdown/revealjs/demo.html",
     },
