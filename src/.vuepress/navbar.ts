@@ -7,6 +7,7 @@ export default navbar([
     text: "Posts",
     icon: "pen-to-square",
     prefix: "/posts/",
+    // children 下拉列表
     children: [
       {
         text: "Apple",
@@ -43,10 +44,5 @@ export default navbar([
       "tomato",
       "strawberry",
     ],
-  },
-  {
-    text: "V2 Docs",
-    icon: "book",
-    link: "https://theme-hope.vuejs.press/",
   },
 ]);

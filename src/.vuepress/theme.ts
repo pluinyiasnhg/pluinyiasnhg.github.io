@@ -13,13 +13,21 @@ export default hopeTheme({
 
   logo: "https://vip.123pan.cn/1844935313/obsidian/blog-logo.jpg",
 
-  // 位于右上角的 github 标志
-  // repo: "vuepress-theme-hope/vuepress-theme-hope",
+  // 项目仓库
+  repo: "pluinyiasnhg/pluinyiasnhg.github.io",
+
+  // 全屏按钮
+  fullscreen: true,
 
   docsDir: "src",
 
   // navbar
   navbar,
+  navbarLayout: {
+    start: ["Brand"],
+    center: ["Links"],
+    end: ["Language", "Repo", "Outlook", "Search"],
+  },
 
   // sidebar
   sidebar,
@@ -42,10 +50,6 @@ export default hopeTheme({
   blog: {
     description: "Java 后端",
     intro: "/intro.html",
-    // 设置 intro page
-    // 点击头像可进入
-    // blog.name 默认为 author
-    // blog.avater 默认为 logo
     timeline: "朝花夕拾",
     articlePerPage: 10,
     medias: {

@@ -1,2 +1,12 @@
 // you can change config here
-$theme-color: #096dd9;
+//
+// 主题色设置
+$theme-color: (
+  (
+    light: #3BBA81,
+    dark: #1E8C5A,
+  ),
+  #2196f3,
+  #f26d6d,
+  #fb9b5f
+);
