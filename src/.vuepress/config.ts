@@ -16,12 +16,16 @@ export default defineUserConfig({
 
   locales: {
   "/": {
-    // 设置正在使用的语言
+    // 默认中文界面
     lang: "zh-CN",
+    title: "庸碌无常的博客",
+    description: "写作与计算机学习"
   },
   "/en/": {
-    // 设置正在使用的语言
+    // 添加英文，但没配置完成
     lang: "en-US",
+    title: "pluinyiasnhg's blog",
+    description: "Writing and computer learning"
   },
 },
 });
