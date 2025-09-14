@@ -5,9 +5,9 @@ export default navbar([
   {
     text: "样例",
     link: "/demo/README",
-    icon: "laptop-code"
-  }
-  "/codeVault/"
+    icon: "laptop-code",
+  },
+  "/codeVault/",
   // {
   //   text: "Posts",
   //   icon: "pen-to-square",
