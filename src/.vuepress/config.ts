@@ -16,18 +16,18 @@ export default defineUserConfig({
   // shouldPrefetch: false,
 
   // locales: {
-  // "/": {
-  //   // 默认中文界面
-  //   lang: "zh-CN",
-  //   title: "庸碌无常的博客",
-  //   description: "写作与计算机学习"
-  // },
-  // "/en/": {
-  //   // 添加英文，但没配置完成
-  //   lang: "en-US",
-  //   title: "pluinyiasnhg's blog",
-  //   description: "Writing and computer learning"
-  // },
+    // "/": {
+    //   // 默认中文界面
+    //   lang: "zh-CN",
+    //   title: "庸碌无常的博客",
+    //   description: "写作与计算机学习"
+    // },
+    // "/en/": {
+    //   // 添加英文，但没配置完成
+    //   lang: "en-US",
+    //   title: "pluinyiasnhg's blog",
+    //   description: "Writing and computer learning"
+    // },
   // }
 
   plugins: [
@@ -54,5 +54,13 @@ export default defineUserConfig({
         // },
       },
     }),
+
+    commentPlugin({
+      provider: 'Giscus',
+      repo: "pluinyiasnhg/Giscus-for-vuepress",
+      repoid: "R_kgDOPvhPBw",
+      category: "Announcements",
+      categoryid: "DIC_kwDOPvhPB84Cva7e",
+    })
   ],
 });

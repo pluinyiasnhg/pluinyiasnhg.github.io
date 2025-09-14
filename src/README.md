@@ -3,9 +3,9 @@ home: true
 layout: Blog
 icon: house
 title: Blog Home
-heroImage: https://theme-hope-assets.vuejs.press/logo.svg
-heroText: The name of your blog
-tagline: You can put your slogan here
+heroImage: https://vip.123pan.cn/1844935313/obsidian/blog-logo.jpg
+heroText: 庸碌无常
+tagline: 百川到海，何时西归
 heroFullScreen: true
 projects:
   - icon: folder-open
@@ -38,7 +38,7 @@ projects:
     desc: Detailed description of this custom item
     link: https://link.to.your.friend
 
-footer: customize your footer text
+footer: This page is served by github
 ---
 
 This is a blog home page demo.
