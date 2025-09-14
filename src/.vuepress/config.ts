@@ -5,7 +5,7 @@ import theme from "./theme.js";
 export default defineUserConfig({
   base: "/",
 
-  lang: "en-US",
+  lang: "zh-CN",
   title: "Blog Demo",
   description: "A blog demo for vuepress-theme-hope",
 
@@ -13,4 +13,15 @@ export default defineUserConfig({
 
   // Enable it with pwa
   // shouldPrefetch: false,
+
+  locales: {
+  "/": {
+    // 设置正在使用的语言
+    lang: "zh-CN",
+  },
+  "/en/": {
+    // 设置正在使用的语言
+    lang: "en-US",
+  },
+},
 });
