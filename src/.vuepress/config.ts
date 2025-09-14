@@ -58,10 +58,10 @@ export default defineUserConfig({
 
     commentPlugin({
       provider: 'Giscus',
-      repo: "pluinyiasnhg/Giscus-for-vuepress",
-      repoId: "R_kgDOPvhPBw",
+      repo: "pluinyiasnhg/pluinyiasnhg.github.io",
+      repoId: "R_kgDOPvRPPg",
       category: "Announcements",
-      categoryId: "DIC_kwDOPvhPB84Cva7e",
+      categoryId: "DIC_kwDOPvRPPs4Cva9W",
     })
   ],
 });
