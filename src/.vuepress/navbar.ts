@@ -4,10 +4,14 @@ export default navbar([
   "/",
   {
     text: "样例",
-    link: "/demo/README",
+    link: "/demo/",
     icon: "laptop-code",
   },
-  "/codeVault/",
+  {
+    text: "代码笔记",
+    link: "/codeVault/",
+    icon: "pen-to-square",
+  }
   // {
   //   text: "Posts",
   //   icon: "pen-to-square",
