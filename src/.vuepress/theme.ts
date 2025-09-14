@@ -13,7 +13,8 @@ export default hopeTheme({
 
   logo: "https://vip.123pan.cn/1844935313/obsidian/blog-logo.jpg",
 
-  repo: "vuepress-theme-hope/vuepress-theme-hope",
+  // 位于右上角的 github 标志
+  // repo: "vuepress-theme-hope/vuepress-theme-hope",
 
   docsDir: "src",
 
@@ -46,7 +47,7 @@ export default hopeTheme({
     // blog.name 默认为 author
     // blog.avater 默认为 logo
     timeline: "朝花夕拾",
-    articlePerPage: 15,
+    articlePerPage: 10,
     medias: {
       // Baidu: "https://example.com",
       // BiliBili: "https://example.com",

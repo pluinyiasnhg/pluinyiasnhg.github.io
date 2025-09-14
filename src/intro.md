@@ -3,6 +3,6 @@ icon: circle-info
 cover: /assets/images/cover3.jpg
 ---
 
-# Intro Page
+# 介绍
 
-Place your introduction and profile here.
+25级在读研究生，目标是拿下学位证与秋招找个好工作。
