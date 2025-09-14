@@ -41,6 +41,12 @@ export default hopeTheme({
   blog: {
     description: "Java 后端",
     intro: "/intro.html",
+    // 设置 intro page
+    // 点击头像可进入
+    // blog.name 默认为 author
+    // blog.avater 默认为 logo
+    timeline: "朝花夕拾",
+    articlePerPage: 15,
     medias: {
       // Baidu: "https://example.com",
       // BiliBili: "https://example.com",
@@ -155,13 +161,6 @@ export default hopeTheme({
   plugins: {
     blog: true,
 
-    // 设置 intro page
-    // 点击头像可进入
-    // blog.name 默认为 author
-    // blog.avater 默认为 logo
-    blog.description: "记录 Java 后端开发学习、论文与课程学习",
-    blog.timeline: "朝花夕拾",
-    blog.articlePerPage: 15,
 
 
     // Install @waline/client before enabling it
