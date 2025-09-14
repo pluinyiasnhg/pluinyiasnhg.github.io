@@ -28,6 +28,7 @@ export default defineUserConfig({
   //   title: "pluinyiasnhg's blog",
   //   description: "Writing and computer learning"
   // },
+  // }
 
   plugins: [
     docsearchPlugin({
@@ -54,5 +55,4 @@ export default defineUserConfig({
       },
     }),
   ],
-},
 });
