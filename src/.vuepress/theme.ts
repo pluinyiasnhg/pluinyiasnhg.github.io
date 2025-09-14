@@ -4,14 +4,14 @@ import navbar from "./navbar.js";
 import sidebar from "./sidebar.js";
 
 export default hopeTheme({
-  hostname: "https://mister-hope.github.io",
+  hostname: "https://pluinyiasnhg.top",
 
   author: {
-    name: "Mr.Hope",
-    url: "https://mister-hope.com",
+    name: "pluinyiasnhg",
+    url: "https://pluinyiasnhg.top",
   },
 
-  logo: "https://theme-hope-assets.vuejs.press/logo.svg",
+  logo: "https://vip.123pan.cn/1844935313/obsidian/blog-logo.jpg",
 
   repo: "vuepress-theme-hope/vuepress-theme-hope",
 
@@ -23,7 +23,9 @@ export default hopeTheme({
   // sidebar
   sidebar,
 
-  footer: "Default footer",
+  // 页脚
+  footer: "This site is served by GitHub Pages",
+  license: "CC 4.0",
 
   displayFooter: true,
 
