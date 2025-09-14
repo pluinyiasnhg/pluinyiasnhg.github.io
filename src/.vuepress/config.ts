@@ -1,4 +1,5 @@
 import { defineUserConfig } from "vuepress";
+import { docsearchPlugin } from '@vuepress/plugin-docsearch'
 
 import theme from "./theme.js";
 
@@ -27,5 +28,31 @@ export default defineUserConfig({
     title: "pluinyiasnhg's blog",
     description: "Writing and computer learning"
   },
+
+  plugins: [
+    docsearchPlugin({
+      appId: 'YG7YN3OUQB',
+      apiKey: '045033bf4ec35547d1020b6e45996b95',
+      indexName: 'Documentation Website',
+      locales: {
+        '/': {
+          placeholder: '搜索文档',
+          translations: {
+            button: {
+              buttonText: '搜索文档',
+            },
+          },
+        },
+        '/en/': {
+          placeholder: 'Search Documentation',
+          translations: {
+            button: {
+              buttonText: 'Search Documentation',
+            },
+          },
+        },
+      },
+    }),
+  ],
 },
 });

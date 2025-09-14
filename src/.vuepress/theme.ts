@@ -16,8 +16,11 @@ export default hopeTheme({
   // 项目仓库
   repo: "pluinyiasnhg/pluinyiasnhg.github.io",
 
-  // 全屏按钮
+  // 全屏模式
   fullscreen: true,
+
+  // 纯净模式
+  pure: true,
 
   docsDir: "src",
 
@@ -26,16 +29,15 @@ export default hopeTheme({
   navbarLayout: {
     start: ["Brand"],
     center: ["Links"],
-    end: ["Language", "Repo", "Outlook", "Search"],
+    end: ["Language", "Repo", "Outlook", "Search"],  // search 需要插件支持
   },
 
   // sidebar
   sidebar,
 
   // 页脚
-  footer: "This site is served by GitHub Pages",
+  footer: "<p>Served by GitHub Pages</p>",
   license: "CC 4.0",
-
   displayFooter: true,
 
   encrypt: {
@@ -101,11 +103,13 @@ export default hopeTheme({
     component: true,
     demo: true,
     figure: true,
+    footnote: true,
     gfm: true,
     imgLazyload: true,
     imgSize: true,
     include: true,
     mark: true,
+    obsidianImgSize: true,
     plantuml: true,
     spoiler: true,
     stylize: [
