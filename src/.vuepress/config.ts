@@ -63,7 +63,7 @@ export default defineUserConfig({
       repoId: "R_kgDOPvRPPg",
       category: "Announcements",
       categoryId: "DIC_kwDOPvRPPs4Cva9W",
-    })
+    }),
 
     feedPlugin({
       atom: true,
