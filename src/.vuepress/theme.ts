@@ -25,7 +25,19 @@ export default hopeTheme({
   docsDir: "src",
 
   // navbar
-  navbar,
+  navbar: [
+    {
+      text: "问题",
+      link: "/bug/",
+      icon: "laptop-code",
+    },
+    {
+      text: "工具",
+      link: "/tools/",
+      icon: "pen-to-square",
+    },
+  ],
+
   navbarLayout: {
     start: ["Brand"],
     center: ["Links"],
@@ -33,7 +45,12 @@ export default hopeTheme({
   },
 
   // sidebar
-  sidebar,
+  sidebar: {
+    "/tools/": "structure",
+    "/bug/": "structure",
+
+    "/": "structure",
+  },
 
   // 页脚
   footer: "<p>Served by GitHub Pages</p>",
@@ -55,32 +72,10 @@ export default hopeTheme({
     timeline: "朝花夕拾",
     articlePerPage: 10,
     medias: {
-      // Baidu: "https://example.com",
-      // BiliBili: "https://example.com",
-      // Bitbucket: "https://example.com",
-      // Dingding: "https://example.com",
-      // Discord: "https://example.com",
-      // Dribbble: "https://example.com",
       Email: "mailto:pluinyiasnhg@gmail.com",
       GitHub: "https://github.com/pluinyiasnhg",
       Gmail: "mailto:pluinyiasnhg@gmail.com",
-      // Instagram: "https://example.com",
-      // Lark: "https://example.com",
-      // Lines: "https://example.com",
-      // Linkedin: "https://example.com",
-      // Pinterest: "https://example.com",
-      // Pocket: "https://example.com",
-      // QQ: "https://example.com",
-      // Qzone: "https://example.com",
-      // Reddit: "https://example.com",
-      Rss: "https://example.com",
-      // Steam: "https://example.com",
-      // Twitter: "https://example.com",
-      // Wechat: "https://example.com",
-      // Weibo: "https://example.com",
-      // Whatsapp: "https://example.com",
-      // Youtube: "https://example.com",
-      // Zhihu: "https://example.com",
+      // Rss: "https://example.com",
       VuePressThemeHope: {
         icon: "https://theme-hope-assets.vuejs.press/logo.svg",
         link: "https://theme-hope.vuejs.press",
