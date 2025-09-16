@@ -1,10 +1,10 @@
 ---
 title: PicList 3.0.4 更新
-shortTitle:
 date: 2025-09-15
 tags:
-  - Appimage
+  - snap
 category:
+  - 报错
 isOriginal: "true"
 ---
 # 背景
@@ -43,7 +43,7 @@ sudo snap install ./piclist_3.0.4_amd64.snap --dangerous
 - 设定存储路径：网盘存放图片的文件夹，以 / 结尾
 - 设定自定义域名：格式是 https://vip.123pan.cn/一串数字 。图床文件夹开启直链后，上传一张图片，右键该图片获取直链链接。注意不以 / 结尾
 
-![image.png](https://vip.123pan.cn/1844935313/obsidian/20250915153744442.png)
+![事先保存的 PicList 配置](https://vip.123pan.cn/1844935313/obsidian/20250915153744442.png)
 
 # 尾声
 

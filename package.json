@@ -15,6 +15,9 @@
     "@vuepress/plugin-comment": "2.0.0-rc.112",
     "@vuepress/plugin-docsearch": "2.0.0-rc.112",
     "@vuepress/plugin-feed": "2.0.0-rc.112",
+    "markdown-it": "^14.1.0",
+    "markdown-it-obsidian": "^1.1.0",
+    "markdown-it-obsidian-callouts": "^0.3.2",
     "sass-embedded": "^1.89.2",
     "vue": "^3.5.17",
     "vuepress": "2.0.0-rc.24",
@@ -22,7 +25,9 @@
   },
   "pnpm": {
     "onlyBuiltDependencies": [
+      "@parcel/watcher",
       "esbuild"
     ]
-  }
+  },
+  "packageManager": "pnpm@10.16.1+sha512.0e155aa2629db8672b49e8475da6226aa4bdea85fdcdfdc15350874946d4f3c91faaf64cbdc4a5d1ab8002f473d5c3fcedcd197989cf0390f9badd3c04678706"
 }

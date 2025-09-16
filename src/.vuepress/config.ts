@@ -14,24 +14,6 @@ export default defineUserConfig({
 
   theme,
 
-  // Enable it with pwa
-  // shouldPrefetch: false,
-
-  // locales: {
-    // "/": {
-    //   // 默认中文界面
-    //   lang: "zh-CN",
-    //   title: "庸碌无常的博客",
-    //   description: "写作与计算机学习"
-    // },
-    // "/en/": {
-    //   // 添加英文，但没配置完成
-    //   lang: "en-US",
-    //   title: "pluinyiasnhg's blog",
-    //   description: "Writing and computer learning"
-    // },
-  // }
-
   plugins: [
     docsearchPlugin({
       appId: 'YG7YN3OUQB',
@@ -46,14 +28,6 @@ export default defineUserConfig({
             },
           },
         },
-        // '/en/': {
-        //   placeholder: 'Search Documentation',
-        //   translations: {
-        //     button: {
-        //       buttonText: 'Search Documentation',
-        //     },
-        //   },
-        // },
       },
     }),
 
