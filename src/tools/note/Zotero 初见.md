@@ -1,5 +1,5 @@
 ---
-title: 初见 Zotero
+title: Zotero 初见
 date: 2025-09-16
 tags:
   - Zotero
