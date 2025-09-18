@@ -11,6 +11,8 @@ isOriginal: "true"
 
 一直有在用 PicList 作为 Obsidian 的图床平台管理工具，前不久看到来自 PicList 的通知，大意是 PicList 版本来到 3.0 以后，没法像之前小版本更新那样自动更新了，需要重新安装一下。
 
+<!-- more -->
+
 ![新版通知](https://vip.123pan.cn/1844935313/obsidian/20250915180641528.png)
 
 由于我之前安装软件图省事，遵循着“能用 apt 就用 apt，不然就用 snap、flatapk，实在不行，再考虑 appimage”，所以我也不知道我的 PicList 安装到那里去了😢。

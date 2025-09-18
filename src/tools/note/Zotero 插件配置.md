@@ -12,7 +12,9 @@ category:
 
 插件按照名称首字母排序，名称中带⭐的插件值得仔细学习，单开一篇文章述说。名称中带❔的插件说明我不清楚它到底什么用。名称带💰的插件有付费部分，可能是只给试用，也可能是付费解锁全部功能，基本功能免费用。
 
-发现带⭐的插件普遍有笔记软件出品的说明文档，比如 Ethereal Style 文档基于 notion、 Magic 文档基于飞书、Translate 文档基于语雀。
+发现带⭐的插件普遍有笔记软件出品的说明文档，比如 Ethereal Style 文档基于 notion 、Magic 文档基于飞书、Translate 文档基于语雀。
+
+<!-- more -->
 
 # 插件
 
@@ -23,6 +25,15 @@ category:
 	- 『工具-插件市场』或者中央面板上端一个像拼图的图标
 - 评价：
 	- 插件市场，用于在 Zotero 内部浏览和下载插件，根据网络环境可以选择国内源或国外源
+
+## Better BibTeX
+
+- 项目地址：[戳这](https://github.com/retorquere/zotero-better-bibtex)
+- 用法：
+	- 选中条目，右键菜单中会出现“Better BibTeX”选项
+- 评价：
+	- **导出 Zotero 数据**，可以配合 Obsidian 插件将 Zotero 笔记、引文、注释导入到 Obsdian 中
+	- 格式和编码转换，把 Zotero 使用的 UTF-8 Unicode 格式转换为改进的 LaTeX
 
 ## Better Notes⭐
 
@@ -126,7 +137,7 @@ category:
 - 项目地址：[戳这](https://github.com/windingwind/zotero-pdf-translate?tab=readme-ov-file)
 - 用法：
 	- 自带的谷歌翻译已经够用了
-	- [腾讯的文本翻译](https://cloud.tencent.com/document/product/551/35017)每月500万字符，[火山的文本翻译](https://www.volcengine.com/docs/4640/68515)每月200万字符。此外，腾讯翻译可以在用完免费额度后，停止服务；火山翻译采取后支付的方式，用完免费额度后会马上收费
+	- [腾讯翻译](https://cloud.tencent.com/document/product/551/35017)每月500万字符，[字节的火山翻译](https://www.volcengine.com/docs/4640/68515)每月200万字符。此外，腾讯翻译可以在用完免费额度后，停止服务；火山翻译采取后支付的方式，用完免费额度后会马上收费。[Gemini](https://aistudio.google.com/)免费申请和使用 API，不仅限于机器翻译
 - 评价：
 	- 用于划词翻译
 	- 使用较简单，主要麻烦是申请各家机器翻译的 API，可以参考[这篇教程](https://zotero-chinese.com/user-guide/plugins/translate/)进行配置
