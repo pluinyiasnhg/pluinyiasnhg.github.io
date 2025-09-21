@@ -10,9 +10,7 @@ category:
 
 优化 Zotero 使用体验，特别是 Zotero 的笔记功能和与 Obsidian 的联动。
 
-插件按照名称首字母排序，名称中带⭐的插件值得仔细学习，单开一篇文章述说。名称中带❔的插件说明我不清楚它到底什么用。名称带💰的插件有付费部分，可能是只给试用，也可能是付费解锁全部功能，基本功能免费用。
-
-发现带⭐的插件普遍有笔记软件出品的说明文档，比如 Ethereal Style 文档基于 notion 、Magic 文档基于飞书、Translate 文档基于语雀。
+插件按照名称首字母排序。名称中带❔的插件说明我不清楚它到底什么用；名称带💰的插件有付费部分，可能是只给试用，也可能是付费解锁全部功能，基本功能免费用。
 
 <!-- more -->
 
@@ -35,11 +33,12 @@ category:
 	- **导出 Zotero 数据**，可以配合 Obsidian 插件将 Zotero 笔记、引文、注释导入到 Obsdian 中
 	- 格式和编码转换，把 Zotero 使用的 UTF-8 Unicode 格式转换为改进的 LaTeX
 
-## Better Notes⭐
+## Better Notes
 
 - 项目地址：[戳这](https://github.com/windingwind/zotero-better-notes)
 - 评价：
-	- 实现 Zotero 的双链笔记功能
+	- 和 OB 相比，md 笔记很不好用
+	- 适合将注释转化为 md 文件形式，最终导入到 OB 中
 
 ## Chartero
 
@@ -68,13 +67,12 @@ category:
 	- 鼠标悬浮在该插件获取到的一则参考文献，会出现浮窗，浮窗包含题目、期刊、发表时间、作者、摘要等
 	- 对于英文摘要，可以配合 Translate 插件实现翻译：Ctrl + 鼠标单击摘用区域
 
-## Ethereal Style⭐💰
+## Ethereal Style💰
 
 - 项目地址：[戳这](https://github.com/MuiseDestiny/zotero-style?tab=readme-ov-file)
 - 评价：
-	- 有 pro 版本
-	- 美化 Zotero 界面。我记得也可以把一些数据可视化，比如影响因子、被引用数
-
+	- pro 版本可以把一些数据可视化，比如影响因子、被引用数。
+	- 免费版功能较少，丰富 Zotero 中间窗格的显示内容，比如阅读时间、期刊标签等。
 
 ## DOI Manager
 
@@ -98,12 +96,14 @@ category:
 	- 比如期刊及其期刊缩写，有些论文要求缩写，有些不要求缩写；比如根据高校名称填写高校所在地
 	- 插件 Zoplicate 专门**检测和管理重复的文献条目**，Linter 复杂功能中也有管理重复文献冲突的功能
 
-## Magic⭐💰
+## Magic💰
 
 - 项目地址：[戳这](https://github.com/l0o0/MagicZotero)
 - 评价：
 	- 定价128，提供七天试用，使用文档[戳这](https://www.magiczotero.top/)
-	- 定位是**全文翻译**，由[Zotero 中文社区](https://zotero-chinese.com/)出品，这让想起了隔壁 Obsidian 的 PKMer 团队，他们也有自己的插件，不知道有没有推出自己的付费插件
+	- 定位是**全文翻译和总结**，由[Zotero 中文社区](https://zotero-chinese.com/)出品，这让想起了隔壁 Obsidian 的 PKMer 团队，他们也有自己的插件，不知道有没有推出自己的付费插件
+	- 不太好用，不如沉浸式翻译的 [BabelDOC](https://app.immersivetranslate.com/babel-doc/)。全文翻译还算简单，只需要谷歌翻译就行。全文总结就麻烦多了，又要大模型 API，又要专门 PDF 排版的大模型
+	- 相比之下，BabelDOC 每月免费翻译一千页，多开几个帐号就完全够用了。10月15日的更新后，改为每月提供 50w token 额度，不再按页计算
 
 ## PDF Figure
  
@@ -137,7 +137,8 @@ category:
 - 项目地址：[戳这](https://github.com/windingwind/zotero-pdf-translate?tab=readme-ov-file)
 - 用法：
 	- 自带的谷歌翻译已经够用了
-	- [腾讯翻译](https://cloud.tencent.com/document/product/551/35017)每月500万字符，[字节的火山翻译](https://www.volcengine.com/docs/4640/68515)每月200万字符。此外，腾讯翻译可以在用完免费额度后，停止服务；火山翻译采取后支付的方式，用完免费额度后会马上收费。[Gemini](https://aistudio.google.com/)免费申请和使用 API，不仅限于机器翻译
+	- [腾讯翻译](https://cloud.tencent.com/document/product/551/35017)每月500万字符，[字节的火山翻译](https://www.volcengine.com/docs/4640/68515)每月200万字符。此外，腾讯翻译可以在用完免费额度后，停止服务；火山翻译采取后支付的方式，用完免费额度后会马上收费。
+	- [Gemini](https://aistudio.google.com/)免费申请和使用 API，但是 Gemini 有速率限制：每分钟请求数 (RPM)、每分钟 token 数（输入）(TPM)、每日请求数 (RPD)，三选一满足就会翻译失败。实际用下来很鸡肋
 - 评价：
 	- 用于划词翻译
 	- 使用较简单，主要麻烦是申请各家机器翻译的 API，可以参考[这篇教程](https://zotero-chinese.com/user-guide/plugins/translate/)进行配置
