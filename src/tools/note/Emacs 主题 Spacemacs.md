@@ -22,9 +22,10 @@ isOriginal: "true"
 
 Spacemacs 为进行过配置的 Emacs 用户提供了继承之前配置的选择，具体参考 [full installation](https://github.com/syl20bnr/spacemacs?tab=readme-ov-file#install)。
 
-接着就是下载 Spacemac ：
+接着就是下载 Spacemac 仓库的 develop 分支，另一条分支 master 已经很久没更新了：
 
 ```zsh
+# 下载
 git clone https://github.com/syl20bnr/spacemacs $HOME/.emacs.d
 ```
 
@@ -48,6 +49,21 @@ st "ack") (const "grep"))' in `("pt")' failed because:
 如果是用快捷方式 Emacs（Termial）启动，状态栏就显示正常。很奇怪。
 
 解决方法是，打开 `~/.spacemacs.d/init.el` ，找到 dotspacemacs-search-tools ，把搜索工具 pt 删除。看注释的意思是，会优先选前面的搜索工具，如果没安装，就选下一个，理论上安装了 rg ，即 ripgrep 就不该报错。
+
+# 更新主题
+
+更新 Spacemacs 仓库：
+
+```zsh
+# 关闭 emacs 并手动 git 更新
+git pull --rebasZe
+```
+
+更新软件包：`M-x configuration-layer/update-packages
+
+回滚软件包更新：`M-x configuration-layer/rollback` 
+
+`M-x` 是 Emacs 的命令前缀，在 Spacemacs 中可以用 `<SPC> <SPC>` 代替。
 
 # 阅读 init.el
 
