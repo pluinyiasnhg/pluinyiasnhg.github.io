@@ -150,7 +150,7 @@ install-packages 有三个选项：used-only、used-but-keep-unused、all。选�
 - `<SPC> w d` ：删除当前窗格，d 是 delete
 - `<SPC> 数字` ：切换到对应数字的窗格
 - `<SPC> b s` ：打开缓冲区 `*scratch*` ，b 是 buffer
-- `<SPC> <TAB>` ：在当前缓冲区和上一个缓冲区之间快速切换
+- `<SPC> <TAB>` ：在当前缓冲区和上一个**缓冲区之间快速切换**
 - `<SPC> b b` ：列出缓冲区
 - `<SPC> b d` ：关闭当前缓冲区
 - `<SPC> T n` ：切换主题，T 记作 Theme，n 记作 next

@@ -8,7 +8,7 @@ category:
 ---
 # 前言
 
-学习 Harry Roberts 的 CSS 教程： [High-level advice and guidelines for writing sane, manageable, scalable CSS](https://cssguidelin.es/)。这个教程不仅仅是在讲 CSS 如何用，更是在讲 CSS 代码艺术。
+学习 Harry Roberts 的 CSS 教程： [High-level advice and guidelines for writing sane, manageable, scalable CSS](https://cssguidelin.es/)。这个教程主要在讲如何写好 CSS 代码，至于 CSS 代码具体语法之类的，还需要自行寻找其他教程。
 
 <!-- more -->
 
