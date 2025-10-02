@@ -1,5 +1,5 @@
 ---
-title: JavaScript 入门
+title: JavaScript 5 入门
 date: 2025-09-30
 tags:
   - JavaScript
@@ -296,7 +296,7 @@ s[-1] // undefined
 
 ## 狭义对象
 
-（未完）
+
 
 ## 数组
 

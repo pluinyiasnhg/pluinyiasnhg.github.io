@@ -144,6 +144,15 @@ category:
 	- 用于划词翻译
 	- 使用较简单，主要麻烦是申请各家机器翻译的 API，可以参考[这篇教程](https://zotero-chinese.com/user-guide/plugins/translate/)进行配置
 
+## Zoplicate 
+
+- 项目地址：[戳这](https://github.com/ChenglongMa/zoplicate/blob/main/README_CN.md)
+- 用法：
+	- 『设置-Zoplicate』中有三条设置：处理重复条自的默认操作、选择作为主条目的条目版本、是否在"重复条目"标签后显示重复条目数量
+- 评价：
+	- 用于检测和管理重复的文献条目
+	- 有时候用浏览器插件下载文档时，关闭网页太快，于是 Zotero 中只有条目，没有附件，这时候重新回去下载，就会出现一个重复条目，很麻烦，要手动合并。该插件解决了该痛点
+
 # 尾声
 
 第一轮 Zotero 插件，主要参考 Zotero 中文社区的新手教程，以及学校社团中一位大佬分享的自己所用插件的截图。
