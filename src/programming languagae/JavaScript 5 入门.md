@@ -398,15 +398,56 @@ obj[123] // "hello world"
 > 注意，删除一个不存在的属性，`delete`不报错，而且返回`true`。当 delete 无法删除属性时，才会返回 `false` 。
 > `delete`命令只能删除对象本身的属性，无法删除继承的属性。此时 `delete` 返回 `true`，但继承的属性仍然正常使用。
 
+查看属性是否存在：in 运算符。它的左边是一个字符串，表示属性名，右边是一个对象。
 
+```js
+var obj = { p: 1 };
+'p' in obj // true
+'toString' in obj // true
+```
 
+`in`运算符的一个问题是，它不能识别哪些属性是对象自身的，哪些属性是继承的。这时，可以使用对象的`hasOwnProperty`方法判断一下，是否为对象自身的属性。
 
+属性的遍历：`for...in` 循环。它不仅遍历对象自身的属性，还遍历继承的属性，前提是这些属性是可遍历的，否则会跳过不可遍历的属性。
 
+```js
+// 利用对象的 hasOwnProperty 方法，仅遍历对象自身的属性
+var person = { name: '老张' };
 
+for (var key in person) {
+  if (person.hasOwnProperty(key)) {
+    console.log(key);
+  }
+}
+```
+
+`with` 语句用于操作同一个对象的多个属性时，提供一些书写的方便。
+
+```js
+var obj = {
+  p1: 1,
+  p2: 2,
+};
+with (obj) {
+  p1 = 4;
+  p2 = 5;
+}
+// 等同于
+obj.p1 = 4;
+obj.p2 = 5;
+```
+
+> [!warning] 
+> 注意，如果`with`区块内部有变量的赋值操作，必须是当前对象已经存在的属性，否则会创造一个当前作用域的全局变量。
+> 建议不要使用`with`语句，可以考虑用一个临时变量代替`with`。
 
 ## 数组
 
 ## 函数
+
+[未完待续](https://wangdoc.com/javascript/types/function)
+
+
 
 
 
