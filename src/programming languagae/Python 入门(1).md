@@ -1,5 +1,5 @@
 ---
-title: Python 入门
+title: Python 入门(1)
 date: 2025-10-08
 tags:
   - Python
@@ -9,12 +9,14 @@ category:
 ---
 # 前言
 
-学习 Python 官方的 [Python3 tutorial 中文版](https://docs.python.org/zh-cn/3.14/tutorial/index.html)。有关该文档的介绍如下：
+学习 Python 官方的 [Python3 tutorial 中文版](https://docs.python.org/zh-cn/3.14/tutorial/index.html) 前六章，主要包括函数、数据结构、模块与包。
+
+<!-- more -->
+
+有关该文档的介绍如下：
 
 > 本教程对每一个功能的介绍并不完整，甚至没有涉及全部常用功能，只是介绍了 Python 中最值得学习的功能，旨在让读者快速感受一下 Python 的特色。学完本教程的读者可以阅读和编写 Python 模块和程序，也可以继续学习 [Python 标准库](https://docs.python.org/zh-cn/3.14/library/index.html#library-index)。
 > 标准库与模块的内容详见 [Python 标准库](https://docs.python.org/zh-cn/3.14/library/index.html#library-index)。[Python 语言参考手册](https://docs.python.org/zh-cn/3.14/reference/index.html#reference-index) 是更正规的语言定义。
-
-<!-- more -->
 
 # 1. 课前甜点
 
@@ -293,6 +295,131 @@ Arguments: spam eggs
 
 仅修改列表的方法都不会打印返回值，比如 `insert`, `remove` 或 `sort`，它们返回默认值 None。这是适用于 Python 中所有可变数据结构的设计原则。
 
+列表推导式创建列表的方式更简洁。列表推导式的方括号内包含以下内容：一个表达式，后面为一个 `for` 子句，然后，是零个或多个 `for` 或 `if` 子句。结果是由表达式依据 `for` 和 `if` 子句求值计算而得出一个新列表。 
 
+```python
+[(x, y) for x in [1,2,3] for y in [3,1,4] if x != y]
 
+# 等价于
 
+combs = []
+for x in [1,2,3]:
+    for y in [3,1,4]:
+        if x != y:
+            combs.append((x, y))
+
+combs
+```
+
+`del` 语句可以按索引而不是按值从一个列表移除条目。
+
+```python
+# 清空列表
+del a[:]
+
+# 删除列表，此时引用 a 会报错
+del a
+```
+
+## 元组
+
+Python 的序列类型有列表、range，以及本节的元组。
+
+元组由多个用逗号隔开的值组成，输出时，元组都要由圆括号标注，这样才能正确地解释嵌套元组。输入时，圆括号可有可无。
+
+```python
+>>> t = 12345, 54321, 'hello!'
+>>> t
+(12345, 54321, 'hello!')
+>>> # 元组是不可变对象，但可以包含可变对象
+>>> v = ([1, 2, 3], [3, 2, 1])
+>>> v
+([1, 2, 3], [3, 2, 1])
+>>> # 创建 0 个或 1 个元素的元组比较特殊
+>>> empty = ()
+>>> singleton = 'hello',
+```
+
+## 集合
+
+集合是由不重复元素组成的无序容器。创建集合用花括号或 `set()` 函数。注意，创建空集合只能用 `set()`，不能用 `{}`，`{}` 创建的是空字典。
+
+集合对象支持并集 `a | b`、交集 `a & b`、差集 `a - b`、对称差 `a ^ b` 等数学运算。
+
+与列表推导式类似，集合也支持推导式，比如 `{x for x in 'abracadabra' if x not in 'abc'}`。
+
+## 字典
+
+字典理解为 _键值对_ 的集合，但字典的键必须是唯一的。字典是以 _键_ 来索引的，键可以是任何不可变类型：
+
+- 字符串和数字总是可以作为键
+- 元组在其仅包含字符串、数字或元组时也可以作为键；如果一个元组直接或间接地包含了任何可变对象，则不可以用作键
+- 不能使用列表作为键
+
+创建字典的方式有：
+
+- `{}` 内指定键值対
+- `dict()` 构造函数，如 `dict([('sape', 4139), ('guido', 4127), ('jack', 4098)])`
+	- 用关键字参数指定键值对 `dict(sape=4139, guido=4127, jack=4098)`
+- 字典推导式，如 `{x: x**2 for x in (2, 4, 6)}`
+
+使用不存在的键获取字典的值时，会报错，可以改用字典的 `get()` 方法，遇到不存在的键会返回 `None`。
+
+```python
+>>> tel['Jack']
+>>> tel.get('Jack')
+>>> # del 删除键值対
+>>> del tel['Jack']
+```
+
+## 循环的技巧
+
+- 当对字典执行循环时，可以使用 [`items()`](https://docs.python.org/zh-cn/3.14/library/stdtypes.html#dict.items "dict.items") 方法同时提取键及其对应的值
+- 在序列中循环时，用 [`enumerate()`](https://docs.python.org/zh-cn/3.14/library/functions.html#enumerate "enumerate") 函数可以同时取出位置索引和对应的值
+- 同时循环两个或多个序列时，用 [`zip()`](https://docs.python.org/zh-cn/3.14/library/functions.html#zip "zip") 函数可以将其内的元素一一匹配
+
+```python
+knights = {'gallahad': 'the pure', 'robin': 'the brave'}
+for k, v in knights.items():
+    pass
+
+for i, v in enumerate(['tic', 'tac', 'toe']):
+    print(i, v)
+
+for q, a in zip(questions, answers):
+    print('What is your {0}?  It is {1}.'.format(q, a))
+```
+
+# 6. 模块
+
+模块是包含 Python 定义和语句的文件。其文件名是模块名加后缀名 `.py` 。在模块内部，通过全局变量 `__name__` 可以获取模块名（即字符串）。
+
+在 Python 解释器中导入模块 `import hello` ，此操作不会直接把 `hello` 中定义的函数名称添加到当前命名空间中，它只是将模块名称 `hello` 添加到那里。 使用该模块名称可以访问其中的函数，比如 `hello.print_hello()`。
+
+以脚本方式执行模块 `python fibo.py <arguments>` ，此时会把模块的`__name__` 赋值为 `"__main__"`。通常在模块末尾见到的 `if __name__ == "__main__":` ，用于为模块提供一个便捷的用户接口，或用于测试（把模块作为执行测试套件的脚本运行）。只有在模块作为“main”文件执行时才会运行。
+
+为了快速加载模块，Python 把模块的编译版本缓存在 `__pycache__` 目录中，文件名为 `module._version_.pyc`。从 `.pyc` 文件读取的程序不比从 `.py` 读取的执行速度快，`.pyc` 文件只是加载速度更快。
+
+Python 对比编译版与源码的修改日期，查看编译版是否已过期，是否要重新编译。此进程完全是自动的。此外，编译模块与平台无关，因此，可在不同架构的系统之间共享相同的库。
+
+## 包
+
+包是通过使用“带点号模块名”来构造 Python 模块命名空间的一种方式。 例如，模块名 `A.B` 表示名为 `A` 的包中名为 `B` 的子模块。 就像使用模块可以让不同模块的作者不必担心彼此的全局变量名一样，使用带点号模块名也可以让 NumPy 或 Pillow 等多模块包的作者也不必担心彼此的模块名冲突。
+
+需要有 `__init__.py` 文件才能让 Python 将包含该文件的目录当作包来处理。在最简单的情况下，`__init__.py` 可以是一个空文件，但它也可以执行包的初始化代码或设置 `__all__` 变量。
+
+使用 `from package import item` 时，item 可以是包的子模块（或子包），也可以是包中定义的函数、类或变量等其他名称。相反，使用 `import item.subitem.subsubitem` 句法时，除最后一项外，每个 item 都必须是包；最后一项可以是模块或包，但不能是上一项中定义的类、函数或变量。
+
+`from package import *` 和 `from module import *` 完全不同。从模块中导入 * 会导入模块内定义的所有名称；从包中导入 * 会导入包作者给的模块列表，如果作者认为没有必要在包中执行导入 * 操作，也可以不提供此列表。
+
+包作者会在模块目录下面创建 `__init__.py` 文件，文件包含一个模块列表 `__all__` 。模块列表中的模块会被本地定义的名称影响，比如在 `__init__.py` 文件中定义一个 `reverse` 函数，这时导入模块列表中的 `reverse` 模块，实际是导入 `reverse` 函数。
+
+当包由多个子包构成时，可以使用相对导入来导入所涉及的当前包和上级包。
+
+```python
+from . import echo
+from .. import formats
+from ..filters import equalizer
+```
+
+注意，相对导入是基于当前模块所属包的名称进行的。由于主模块（即直接运行的脚本）没有所属包，因此那些打算作为 Python 应用程序主模块使用的模块，必须始终使用绝对导入。
