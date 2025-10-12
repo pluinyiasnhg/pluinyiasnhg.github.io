@@ -183,6 +183,7 @@ ds = datasets.FashionMNIST(
 ```python
 # 确定训练所用的加速设备
 device = torch.accelerator.current_accelerator().type if torch.accelerator.is_available() else "cpu"
+print(f"Using {device} device")
 
 class NeuralNetwork(nn.Module):
     def __init__(self):
@@ -286,6 +287,8 @@ def train_loop(dataloader, model, loss_fn, optimizer):
     # Unnecessary in this situation but added for best practices
     model.train()
     for batch, (X, y) in enumerate(dataloader):
+		X, y = X.to(device), y.to(device)
+		
         # Compute prediction and loss
         pred = model(X)
         loss = loss_fn(pred, y)
@@ -312,6 +315,7 @@ def test_loop(dataloader, model, loss_fn):
     # also serves to reduce unnecessary gradient computations and memory usage for tensors with requires_grad=True
     with torch.no_grad():
         for X, y in dataloader:
+			X, y = X.to(device), y.to(device)
             pred = model(X)
             test_loss += loss_fn(pred, y).item()
 			# type(torch.float) 将 True 转换为 1.，False 转换为 0.
@@ -361,6 +365,7 @@ netB.load_state_dict(torch.load(PATH, weights_only=True), strict=False)
 ```python
 # 保存模型
 torch.save(model.state_dict(), 'model_weights.pth')
+print("Saved PyTorch Model State to model.pth")
 
 # 实例化 model
 
@@ -393,4 +398,9 @@ meta_m.load_state_dict(state_dict, assign=True)
 ```
 
 - `torch.load(mmap=True)` 把参数加载到虚拟内存（而不是物理内存），让操作系统自动处理加载和卸载到物理内存。此外，`mmap=True` 不需要等待参数加载完成，就可以进行逐张量处理（ per-tensor processing）
-- `torch.device(meta)` 
+- `m = SomeModule(1000)` 为所有参数/缓冲区分配内存，并按照在`SomeModule.__init__()`中定义的默认初始化方案进行初始化，而 `load_state_dict` 会再次分配一遍内存，造成了浪费。在`torch.device('meta')` 上的张量不携带数据，但携带的所有其他元数据
+- 当张量在设备 `meta` 上时，`load_state_dict` 需要设置 `assign=True` ，且优化器需要在 `load_state_dict` 后面初始化[^1]
+
+进一步阅读：[Saving and Loading Models](https://docs.pytorch.org/tutorials/beginner/saving_loading_models.html)
+
+[^1]: 因为优化器持有`nn.Module.parameters()`的引用，如果传递了`assign=True`，那么必须在从状态字典加载模块之后初始化优化器。
