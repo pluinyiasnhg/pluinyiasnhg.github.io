@@ -2,10 +2,10 @@
 title: Pytorch 入门(1)
 date: 2025-10-10
 tags:
-  - Python
   - Pytorch
+  - 官方教程
 category:
-  - 框架
+  - Python
 ---
 # 前言
 
