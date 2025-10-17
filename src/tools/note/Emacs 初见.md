@@ -9,19 +9,19 @@ category:
 ---
 # 前言
 
-一直想学习 Emacs，但是苦于无法入门。有看过一步步配置出自己的 Emacs 的教程，包括博客教程和视频教程，但学着很不得劲。最后的水平也就记住了退出和保存的快捷键 `C-x C-c` 和 `C-x C-s` 。
+学习 Emacs 内置文档 Emacs tutorial ，结合在线文档 [A Guided Tour of Emacs](https://www.gnu.org/software/emacs/tour/index.html)。
 
 <!-- more -->
 
-这次打算主要看 [Arch Wiki 上的 Emacs 百科](https://wiki.archlinux.org/title/Emacs)进行学习，辅以 Emacs 官方文档。
+一直想学习 Emacs，但是苦于无法入门。有看过一步步配置出自己的 Emacs 的教程，包括博客教程和视频教程，但学着很不得劲。最后的水平也就记住了退出和保存的快捷键 `C-x C-c` 和 `C-x C-s` 。
 
-# Emacs 内置教程
+# Emacs tutorial
 
 我不喜欢 Emacs 的图形化界面，感觉像十年前的前端样式，“不是我喜欢的 Emacs ，直接拒绝”。在终端中输入 `emacs -nw` ，emacs 就在终端中启动了。
 
 先过一遍 Emacs 内置的快速指南，快捷键是 `C-h t` 。如果像我一样不习惯阅读英文，用命令 `M-x help-with-tutorial-spec-language`，选择一份中文文档进行学习。这里的 `M` 是 Meta 键，通常是键盘上的 `Alt` 。
 
-![Emacs 快速指南](https://vip.123pan.cn/1844935313/obsidian/20250918084530894.png)
+![Emacs 快速指南|750x0](https://vip.123pan.cn/1844935313/obsidian/20250918084530894.png)
 
 回显区：屏幕最下面一行，用于显示输入的命令。
 
@@ -73,29 +73,25 @@ C-y 可以召回最近一次移除的内容；`M-y` 可以召回再前一次被�
 
 ## 文件
 
-- 打开文件：`C-x C-f` ，f 记作 file
-- 保存文件：`C-x C-s` ，s 记作 save
+- `C-x C-f` (helm-find-files)：打开文件。若打开一个不存在的文件，则等同于创建一个新文件
+- `C-x C-s` (save-buffer)：保存文件（当前缓冲区）。保存文件时，Emacs 会为文件备份
 
-打开一个不存在的文件，等同于创建一个新文件。
-
-保存文件时，Emacs 会为文件备份。关闭备份的方法：`M-x customize-variable <Return> make-backup-files <Return>` 。
+关闭备份的方法：`M-x customize-variable <Return> make-backup-files <Return>` 。
 
 ## 缓冲区
 
-- 列出缓冲区：`C-x C-b` ，b 记作 buffer
-- 切换缓冲区：`C-x b`
-- 保存所有缓冲区：`C-x s`
+- `C-x C-b` (list-buffers)：列出缓冲区，仅能查看
+- `C-x b` (helm-list-buffers)：列出缓冲区，可以切换
+- `C-x s` (save-some-buffers)：保存所有缓冲区（所有文件）
 
 每个已打开的文件都是一个缓冲区。因此切换缓冲区，等同于打开一个已经打开的文件。
-
-C-x C-s 一次只能给一个文件（缓冲区）保存，如果有多个文件（缓冲区）需要保存，可以用 `C-x s` 。 
 
 ## 快捷键拓展
 
 Emacs 的命令就像天上的星星，数也数不清。把它们都对应到 Ctrl 和 Meta 组合键上显然是不可能的。Emacs 用扩展命令来解决这个问题，扩展命令有两种风格：
 
-- 字符扩展：`C-x`。 C-x 之后输入另一个字符或者组合键
-- 命令名扩展：`M-x`。 M-x 之后输入一个命令名
+- `C-x` ：字符扩展。 `C-x` 之后输入另一个字符或者组合键
+- `M-x` ：命令名扩展。 `M-x` 之后输入一个命令名
 
 ## 挂起 Emacs
 
@@ -119,10 +115,11 @@ Emacs 会定期将正在编辑的文件写入一个“自动保存”文件中�
 
 ## 多窗格
 
-- 只保留光标所在的窗格：`C-x 1`
-- 向下分割出窗格：`C-x 2`
-- 向右分割出窗格：`C-x 3`
-- 切换窗格：`C-x o` ，o 记作 other
+- `C-x 0` (delete-window)：删除窗格
+- `C-x 1` (maximize-window)：只保留光标所在的窗格
+- `C-x 2` (split-window-below)：向下分割出窗格
+- `C-x 3` (split-window-right)：向右分割出窗格
+- `C-x o` (other-window)：切换窗格
 
 不管是向下分，还是向右分，光标还是位于原来的窗格。切换窗格时，多按几次 C-x o，就能循环遍历所有窗格。
 
@@ -140,17 +137,16 @@ Emacs 会定期将正在编辑的文件写入一个“自动保存”文件中�
 
 ## 帮助文档
 
-- `C-h c` ：查看快捷键。在状态栏显示命令的简要说明
-- `C-h k` ：查看快捷键。在下方窗格中显示命令的完整文档
-- `C-h x` ：解释一个命令。需要输入命令名
-- `C-h v` ：查看 Emacs 变量
-- `C-h a` ：相关命令搜索
-- `C-h i` ：阅读手册（info），主要参考文档
+- `C-h r` (info-emacs-manual)：GNU Emacs manual
+- `C-h c` (describle-key-briefly)：查看快捷键。在状态栏显示命令的简要说明
+- `C-h k` (describle-key)：查看快捷键。在下方窗格中显示命令的完整文档
+- `C-h x` (describe-command)：解释一个命令
+- `C-h v` (describe-variable)：查看 Emacs 变量
+- `C-h a` (apropos-command)：相关命令搜索，即 Emacs 根据输入的关键词，罗列出所有包含关键词的命令
+- `C-h i` (info)：阅读手册，是主要参考文档
 - `C-h ?` ：info 的使用指南
 
 `C-h c` 和 `C-h k` 根据快捷键确定；`C-h x` 根据命令名确定。
-
-相关命令搜索是指 Emacs 根据输入的关键词，罗列出所有包含关键词的命令。
 
 ## 软件仓库
 
