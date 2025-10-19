@@ -1,8 +1,8 @@
 ---
-title: goldendict 没声音
+title: Goldendict 没声音
 date: 2025-09-25
 tags:
-  - goldendict
+  - Goldendict
   - mpv
 category:
   - 报错
