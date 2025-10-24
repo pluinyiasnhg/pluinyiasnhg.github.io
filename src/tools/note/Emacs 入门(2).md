@@ -13,7 +13,7 @@ category:
 
 <!-- more -->
 
-起因是在 [Emacs Release](https://www.gnu.org/savannah-checkouts/gnu/emacs/emacs.html#Releases) 上看到今年8月更新的 30.2 版本，再看看 ubuntu 上用 apt 安装的 29.4 版本，两个版本之间隔着一个 30.1。在此之前，也就是今天早上的时候，我还是在看 Emacs 的 lsp-mode，lsp-mode 集成了许多插件，其中之一就是 which-key。在该插件的 Github 主页上，我注意到该插件已经停止更新了，插件在 Emacs 30 计划合并到官方项目中。
+起因是在 [Emacs Release](https://www.gnu.org/savannah-checkouts/gnu/emacs/emacs.html#Releases) 上看到今年8月更新的 30.2 版本，再看看 ubuntu 上用 apt 安装的 29.4 版本，两个版本之间隔着一个 30.1。在此之前，也就是今天早上的时候，我还是在看 Emacs 的 lsp-mode，lsp-mode 集成了许多插件，其中之一就是 which-key。在该插件的 Github 主页上，我注意到该插件已经停止更新了，插件计划在 Emacs 30 合并到官方项目中。
 
 于是，我就非常想体验下新版本的 Emacs，Ubuntu 官方源的更新遥遥无期，只能在本地编译适合 Ubuntu 的软件包了。
 
@@ -59,7 +59,7 @@ tar xvfz emacs-30.2.tar.gz
   - `-f, --file=ARCHIVE` 使用档案文件或设备 ARCHIVE
   - `-z, --gzip, --gunzip, --ungzip` 通过 gzip 过滤档案
 
-> 通常所说的压缩文件，可以分为存档和压缩两个步骤，尽管实际使用中是一步完成的。以 `.tar.gz` 文件为例，`.tar` 即存档文件，`.gz` 即压缩文件。
+> 通常所说的压缩文件，可以分为存档和压缩两个步骤，尽管实际使用中感觉不出，似乎是一步到位的。以 `.tar.gz` 文件为例，`.tar` 即存档文件，`.gz` 即压缩文件。
 
 # 进行配置
 
@@ -89,6 +89,8 @@ You are trying to run Emacs configured with the "pure-GTK" interface under the X
 ```
 
 我在配置过程中遇到最多的问题是缺少各种编译所需的软件包。基本上只要按照报错信息，上网查询缺失包的 apt 安装方式，在本地安装后就没问题了。这个过程可能需要反复多次，每次编译失败都用 `rm -rf` 删除 `config.status`，避免因编译失败而损坏文件。
+
+注意，配置过程中如果需要安装 `libgccjit` 包，那么这个包必须与 `gcc` 的版本一致，比如我笔记本上的 `gcc` 版本是 13.3，对应的 `libgccjit` 包是 `libgccjit-13-dev` 。
 
 # 编译和安装
 
