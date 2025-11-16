@@ -105,7 +105,7 @@ export default hopeTheme({
     include: true,
     mark: true,
     math: {
-      type: "katex"
+      type: "katex",
     },
     obsidianImgSize: true,
     plantuml: true,
