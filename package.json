@@ -15,6 +15,7 @@
     "@vuepress/plugin-comment": "2.0.0-rc.112",
     "@vuepress/plugin-docsearch": "2.0.0-rc.112",
     "@vuepress/plugin-feed": "2.0.0-rc.112",
+    "katex": "^0.16.25",
     "markdown-it": "^14.1.0",
     "markdown-it-obsidian": "^1.1.0",
     "markdown-it-obsidian-callouts": "^0.3.2",
