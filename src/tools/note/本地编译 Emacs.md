@@ -1,5 +1,5 @@
 ---
-title: Emacs 入门(2)
+title: 本地编译 Emacs
 date: 2025-10-20
 tags:
   - 编辑器
@@ -49,7 +49,7 @@ gpg --verify emacs-30.2.tar.gz.sig emacs-30.2.tar.gz
 解压 tarball 压缩包：
 
 ```zsh
-tar xvfz emacs-30.2.tar.gz
+tar zxvf emacs-30.2.tar.gz
 ```
 
  使用 `tar --help | grep -E "^ *-(x|v|f|z)"` 查询上述选项的作用：
