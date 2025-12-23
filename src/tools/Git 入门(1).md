@@ -10,6 +10,8 @@ category:
 
 阅读 Scott Chacon 的[《Pro Git》中文版](https://git-scm.com/book/zh/v2)前两章，主要是 Git 本地命令，不涉及分支操作。
 
+25/11/26 学习尚硅谷6小时的[《Git与GitLab的企业实战》](https://www.bilibili.com/video/BV1NK421Y7XZ) ，视频配速1.7 。该教程，弥补了我之前看书时缺失的实践部分。
+
 <!-- more -->
 
 # 1. 版本控制系统
@@ -20,13 +22,13 @@ category:
 
 ## 集中化的版本控制系统
 
-如何让在不同系统上的开发者协同工作？ 集中化的版本控制系统（Centralized Version Control Systems，简称 CVCS）应运而生。 这类系统，诸如 CVS、Subversion 以及 Perforce 等，都有一个单一的集中管理的服务器，保存所有文件的修订版本，而协同工作的人们都通过客户端连到这台服务器，取出最新的文件或者提交更新。 
+如何让在不同系统上的开发者协同工作？ 集中化的版本控制系统（Centralized Version Control Systems，CVCS）应运而生。 这类系统，诸如 CVS、Subversion 以及 Perforce 等，都有一个单一的集中管理的服务器，保存所有文件的修订版本，而协同工作的人们都通过客户端连到这台服务器，取出最新的文件或者提交更新。 
 
 CVCS 显而易见的缺点是中央服务器的单点故障。 如果宕机一小时，那么在这一小时内，谁都无法提交更新，也就无法协同工作。 如果中心数据库所在的磁盘发生损坏，又没有做恰当备份，毫无疑问你将丢失所有数据，包括项目的整个变更历史，只剩下人们在各自机器上保留的单独快照。 本地版本控制系统也存在类似问题，只要整个项目的历史记录被保存在单一位置，就有丢失所有历史更新记录的风险。
 
 ## 分布式版本控制系统
 
-于是分布式版本控制系统（Distributed Version Control System，简称 DVCS）面世了。 在这类系统中，像 Git、Mercurial 以及 Darcs 等，客户端并不只提取最新版本的文件快照， 而是把代码仓库完整地镜像下来，包括完整的历史记录。 这么一来，任何一处协同工作用的服务器发生故障，事后都可以用任何一个镜像出来的本地仓库恢复。 因为每一次的克隆操作，实际上都是一次对代码仓库的完整备份。
+于是分布式版本控制系统（Distributed Version Control System，DVCS）面世了。 在这类系统中，像 Git、Mercurial 以及 Darcs 等，客户端并不只提取最新版本的文件快照， 而是把代码仓库完整地镜像下来，包括完整的历史记录。 这么一来，任何一处协同工作用的服务器发生故障，事后都可以用任何一个镜像出来的本地仓库恢复。 因为每一次的克隆操作，实际上都是一次对代码仓库的完整备份。
 
 Git 和其它版本控制系统（包括 Subversion 和近似工具）的主要差别在于 Git 对待数据的方式。 从概念上来说，其它大部分系统以文件变更列表的方式存储信息，这类系统（CVS、Subversion、Perforce 等等） 将它们存储的信息看作是一组基本文件和每个文件随时间逐步累积的差异 （它们通常称作 基于差异（delta-based） 的版本控制）。
 
@@ -50,6 +52,17 @@ Git 自带一个 `git config` 的工具来帮助设置控制 Git 外观和行�
 3. 当前使用仓库的 Git 目录中的 config 文件（即 `.git/config`）：针对该仓库。可以传递 `--local` 选项让 Git 强制读写此文件，虽然默认情况下用的就是它。
 
 可以使用 `git config --list` 命令来列出所有 Git 当时能找到的配置。
+
+```zsh
+❯ git config --list
+user.email=pluinyiasnhg@gmail.com
+user.name=pluinyiasnhg
+core.editor=vim
+core.quotepath=false
+http.https://github.com.proxy=http://127.0.0.1:7890
+https.https://github.com.proxy=https://127.0.0.1:7890
+credential.helper=store
+```
 
 由于 Git 会从多个文件中读取同一配置变量的不同值，因此你可能会在其中看到意料之外的值而不知道为什么。 此时，可以查询 Git 中该变量的原始值，它会显示哪一个配置文件最后设置了该值：`git config --show-origin <配置变量>`。
 
@@ -107,6 +120,10 @@ man git-config
 
 ##  Git 本地命令
 
+git init 初始化本地库。创建后，当前目录出现一个 `.git` 文件夹。
+`git reflog` 查看历史版本。
+`git reset --hard` 切换版本。
+
 Git 有三种状态：已修改、已暂存和已提交。
 
 - 已修改表示修改了文件，但还没保存到数据库中。
@@ -130,7 +147,8 @@ GitHub 有一个十分详细的针对数十种项目及语言的 .gitignore 文�
 - `git status` 查看文件状态
 - `git add` 跟踪文件或目录下的所有文件
 - `git diff` 通过文件补丁的格式更加具体地显示哪些行发生改变
-- `git commit` 提交更新
+- `git commit` 创建节点，提交更新
+- `git reset` 本地仓库撤销节点。远程仓库撤销节点是 `git revert`
 - `git rm` 移除文件，有两种：从 git 中移除和从磁盘移除
 - `git mv` 重命名文件
 - `git log` 查看提交历史
@@ -165,6 +183,13 @@ Git 提供了一个跳过使用暂存区域的方式， 只要在提交的时候
 要删除之前修改过或已经放到暂存区的文件，则必须使用强制删除选项 `-f`（force 的首字母）。 这是一种安全特性，用于防止误删尚未添加到快照的数据。
 
 另一种情况是，我们想把文件从 Git 仓库中删除（亦即从暂存区域移除），但仍然希望保留在当前工作目录中。 换句话说，想让文件保留在磁盘，但是并不想让 Git 继续跟踪。 当你忘记添加 .gitignore 文件，不小心把一个很大的日志文件或一堆 .a 这样的编译生成文件添加到暂存区时，这一做法尤其有用。 为达到这一目的，使用 `--cached` 选项。
+
+> 不建议用 `git rm` ，而是用 `.gitignore` 。
+
+```zsh
+# 对于 Java 项目
+curl -o .gitignore https://raw.githubusercontent.com/github/gitignore/main/Java.gitignore
+```
 
 ### git mv
 
@@ -297,3 +322,100 @@ Git 支持两种标签：轻量标签（lightweight）与附注标签（annotate
 查看某个标签所指向的文件版本，可以使用 `git checkout` 命令， 这会使你的仓库处于“分离头指针（detached HEAD）”的状态，这个状态有些不好的副作用：
 
 在“分离头指针”状态下，如果你做了某些更改然后提交它们，标签不会发生变化， 但你的新提交将不属于任何分支，并且将无法访问，除非通过确切的提交哈希才能访问。 因此，如果你需要进行更改，比如你要修复旧版本中的错误，那么通常需要创建一个新分支：`git checkout -b version2 v2.0.0`。如果在这之后又进行了一次提交，version2 分支就会因为这个改动向前移动， 此时它就会和 v2.0.0 标签稍微有些不同，这时就要当心了。
+
+
+创建分支：
+
+```git
+git branch <new-branch>
+```
+
+移动分支指向的节点，有直接引用和间接引用两种方式
+
+```git
+git branch -f <branch> <node>
+
+git branch -f <branch> HEAD~<number>
+```
+
+切换分支：切换到已存在的分支，或者创建新分支并切换到新分支上
+
+```git
+git checkout <branch>
+
+git checkout -b <new-branch>
+```
+
+合并分支：假设当前在 main 分支上
+
+-  `git rebase <branch1> <branch2>` 。`<branch2>`分支的节点拷贝一份到 `<branch1>` 分支后面，就好像自始至终只有一个 `<branch1>` 分支。
+- `git rebase -i HEAD~<number>` 。选取HEAD往上的`<number>`个节点，打开 UI 界面，任意调整顺序、删除节点。
+- `git cherry-pick <c1> <c2>` 。 将指定的节点，如`c1、c2`，拷贝一份到 `main` 分支上。这里的 `c1、c2` 代指节点的 hash值。
+
+移动 HEAD 指向的节点，与移动分支指向的节点类似，也有直接引用和间接引用两种。
+
+```git
+git checkout <branch>~<number>
+```
+
+多条命令可以集中在一行内执行，用 `;` 隔开多条命令。
+
+远程操作
+
+- `git clone`
+- `git fetch` 拉取远程仓库内容，但不合并——本地仓库还是之前的文件
+- `git pull` 拉取远程仓库内容，并合并——本地仓库文件完成远程同步
+- `git push` 上传到远程仓库，并合并
+	- `git push <remote> <source>` 比如，将 fool 分支推送到 origin，前提是本地有 origin/fool
+	- `git push <remote> <source>:<destination>` 去除了 “前提是本地有...”的条件
+
+
+> [!info] 
+> `git pull` 是 fetch 和 merge 的缩写
+> `git pull --rebase` 是 fetch 和 rebase 的缩写
+> 直观的区别是 `git pull` 下的远程仓库是多个分支的，`git pull --rebase` 下是单个分支的
+
+设置远程追踪分支，默认是本地的 main 追踪 origin/main，但实际上可以让任意的本地分支追踪 origin/main。
+
+- `git checkout -b <branch> origin/main` 
+- `git branch -u origin/main <branch>`
+
+注释
+
+- `git tag`
+- `git describe <ref>`
+
+# 将本地仓库推送到 GitHub
+
+1. 在 GitHub 上创建新仓库
+
+- 登录 GitHub
+- 点击右上角 "+" → "New repository"
+- 输入仓库名称（建议与本地仓库同名）
+- 不要初始化 README、.gitignore 或 license（因为本地已有内容）
+- 点击 "Create repository"
+
+2. 下面过程，可以在新仓库主页看到。主页会提示，是创建一个新仓库，还是推送一个本地仓库。
+
+```zsh
+# 查看当前远程仓库（初始应为空）
+git remote -v
+
+# 添加远程仓库
+git remote add origin git@github.com:pluinyiasnhg/JavaBasis.git
+
+# 创建分支 main
+git branch -M main
+
+# 推送代码
+git push -u origin main
+
+# 后续推送只需
+git push
+```
+
+# 参考
+
+- 网页小游戏学 git [Learn Git Branching](https://learngitbranching.js.org/?locale=zh_CN)
+- https://wyag.thb.lt/
+- [Git 命令列表](https://git-scm.com/docs)。
