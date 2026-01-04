@@ -566,16 +566,16 @@ project(工程) - module(模块) - package(包) - class(类)
 
 ### 第1组：提高编写速度（上）
 
-| 说明                                    | 快捷键          |
-| ------------------------------------- | ------------ |
-| 智能提示-edit                             | alt + enter  |
-| 提示代码模板-insert live template           | ctrl+j       |
-| 使用xx块环绕-surround with ...             | ctrl+alt+t   |
-| 调出生成getter/setter/构造器等结构-generate ... | alt+insert   |
-| 自动生成返回值变量-introduce variable ...      | ctrl+alt+v   |
-| 向上移动代码-move statement up              | ctrl+shift+↑ |
-| 向下移动代码-move statement down            | ctrl+shift+↓ |
-| 方法的形参列表提醒-parameter info              | ctrl+p       |
+| 说明                                    | 快捷键           |
+| ------------------------------------- | ------------- |
+| 智能提示-edit                             | `alt + enter` |
+| 提示代码模板-insert live template           | ctrl+j        |
+| 使用xx块环绕-surround with ...             | ctrl+alt+t    |
+| 调出生成getter/setter/构造器等结构-generate ... | `alt+insert`  |
+| 自动生成返回值变量-introduce variable ...      | ctrl+alt+v    |
+| 向上移动一行-move line up                   | alt+shift+↑   |
+| 向下移动一行-move line down                 | alt+shift+↓   |
+| 方法的形参列表提醒-parameter info              | `ctrl+p`      |
 
 ### 第2组：提高编写速度（下）
 
@@ -583,27 +583,27 @@ project(工程) - module(模块) - package(包) - class(类)
 | ------------------------------ | ------------ |
 | 批量修改指定的变量名、方法名、类名等-rename      | shift+f6     |
 | 抽取代码重构方法-extract method ...    | ctrl+alt+m   |
-| 重写父类的方法-override methods ...   | ctrl+o       |
-| 实现接口的方法-implements methods ... | ctrl+i       |
+| 重写父类的方法-override methods ...   | `ctrl+o`     |
+| 实现接口的方法-implements methods ... | `ctrl+i`     |
 | 选中的结构的大小写的切换-toggle case       | ctrl+shift+u |
 | 批量导包-optimize imports          | ctrl+alt+o   |
 
 ### 第3组：类结构、查找和查看源码
 
-| 说明                                   | 快捷键                     |
-| ------------------------------------ | ----------------------- |
-| 如何查看源码-go to class...                | ctrl + 选中指定的结构 或 ctrl+n |
-| 显示当前类结构，支持搜索指定的方法、属性等-file structure | ctrl+f12                |
-| 退回到前一个编辑的页面-back                     | ctrl+alt+←              |
-| 进入到下一个编辑的页面-forward                  | ctrl+alt+→              |
-| 打开的类文件之间切换-select previous/next tab  | alt+←/→                 |
-| 光标选中指定的类，查看继承树结构-Type Hierarchy      | ctrl+h                  |
-| 查看方法文档-quick documentation           | ctrl+q                  |
-| 类的UML关系图-show uml popup              | ctrl+alt+u              |
-| 定位某行-go to line/column               | ctrl+g                  |
-| 回溯变量或方法的来源-go to implementation(s)   | ctrl+alt+b              |
-| 折叠方法实现-collapse all                  | ctrl+shift+ -           |
-| 展开方法实现-expand all                    | ctrl+shift+ +           |
+| 说明                                   | 快捷键             |
+| ------------------------------------ | --------------- |
+| 如何查看源码-go to class...                | `ctrl+n`        |
+| 显示当前类结构，支持搜索指定的方法、属性等-file structure | `ctrl+f12`      |
+| 退回到前一个编辑的页面-back                     | `ctrl+alt+←`    |
+| 进入到下一个编辑的页面-forward                  | `ctrl+alt+→`    |
+| 打开的类文件之间切换-select previous/next tab  | alt+←/→         |
+| 光标选中指定的类，查看继承树结构-Type Hierarchy      | `ctrl+h`        |
+| 查看方法文档-quick documentation           | ctrl+q          |
+| 类的UML关系图-show uml popup              | ctrl+alt+u      |
+| 定位某行-go to line/column               | ctrl+g          |
+| 回溯变量或方法的来源-go to implementation(s)   | ctrl+alt+b      |
+| 折叠方法实现-collapse all                  | ctrl+shift+ -   |
+| 展开方法实现-expand all                    | `ctrl+shift+ +` |
 
 ### 第4组：查找、替换与关闭
 
@@ -619,11 +619,25 @@ project(工程) - module(模块) - package(包) - class(类)
 
 | 说明                                   | 快捷键              |
 | ------------------------------------ | ---------------- |
-| 格式化代码-reformat code                  | ctrl+alt+l       |
+| 格式化代码-reformat code                  | `ctrl+alt+l`     |
 | 使用单行注释-comment with line comment     | ctrl + /         |
 | 使用/取消多行注释-comment with block comment | ctrl + shift + / |
-| 选中数行，整体往后移动-tab                      | tab              |
-| 选中数行，整体往前移动-prev tab                 | shift + tab      |
+
+## 调试
+
+运行编写好的程序时，可能出现的几种情况：
+
+- 情况1：没有任何bug,程序执行正确！
+- 情况2：运行以后，出现了错误或异常信息。但是通过日志文件或控制台，显示了异常信息的位置。
+- 情况3：运行以后，得到了结果，但是结果不是我们想要的。
+- 情况4：运行以后，得到了结果，结果大概率是我们想要的。但是多次运行的话，可能会出现不是我们想要的情况。比如：多线程情况下，处理线程安全问题。
+
+![单步调试工具介绍|700x0](https://vip.123pan.cn/1844935313/obsidian/20260102223030235.png)
+
+问题：使用Step Into时，会出现无法进入源码的情况。如何解决？
+
+> 方案1：使用 force step into 即可
+> 方案2：点击Setting -> Build,Execution,Deployment -> Debugger -> Stepping。把Do not step into the classess中的`java.*`、`javax.*` 取消勾选即可。
 
 ## 插件
 
@@ -747,7 +761,7 @@ arr = new int[5];
 | ------ | ----------------------------------------------------------------------- |
 | `虚拟机栈` | 用于存储正在执行的每个Java方法的**局部变量**表等。局部变量表存放了编译期可知长度 的各种基本数据类型、对象引用，方法执行完，自动释放。 |
 | `堆内存`  | **存储对象**（包括数组对象），new来创建的，都存储在堆内存。                                       |
-| `方法区`  | 存储已被虚拟机加载的类信息、常量、（静态变量）、即时编译器编译后的代码等数据。                                 |
+| `方法区`  | 存储已被虚拟机加载的**类信息、常量、（静态变量）、即时编译器编译后的代码**等数据。                             |
 | 本地方法栈  | 当程序中调用了native的本地方法时，本地方法执行期间的内存区域                                       |
 | 程序计数器  | 程序计数器是CPU中的寄存器，它包含每一个线程下一条要执行的指令的地址                                     |
 
