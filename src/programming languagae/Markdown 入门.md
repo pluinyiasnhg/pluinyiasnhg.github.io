@@ -11,7 +11,7 @@ category:
 
 Markdown。
 
-<!--more-->
+<!-- more -->
 
 # 基本语法
 

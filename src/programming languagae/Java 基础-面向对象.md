@@ -1,6 +1,6 @@
 ---
 title: Java 基础-面向对象
-date:
+date: 2026-01-04
 tags:
   - Java
 category:
