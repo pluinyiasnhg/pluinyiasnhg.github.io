@@ -385,6 +385,25 @@ git checkout <branch>~<number>
 - `git tag`
 - `git describe <ref>`
 
+## git push
+
+如果是第一次推送，需要进行登录，登录所需的密码可以是Personal Access Token或者SSH Key。
+
+```zsh
+# 生成 SSH key
+ssh-keygen -t ed25519 -C "pluinyiasnhg@gmail.com"
+
+# 把公钥加到 GitHub
+cat ~/.ssh/id_ed25519.pub
+# 将输出内容复制到 GitHub Settings → SSH and GPG keys → New SSH key
+
+# 把仓库地址改成SSH
+git remote set-url origin git@github.com:pluinyiasnhg/pluinyiasnhg.github.io.git
+
+# 以后push，就不用输账号/密码了
+git push
+```
+
 # 将本地仓库推送到 GitHub
 
 1. 在 GitHub 上创建新仓库

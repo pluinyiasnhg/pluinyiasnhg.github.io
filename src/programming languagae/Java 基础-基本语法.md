@@ -34,13 +34,13 @@ JDK 是什么？
 - JDK (Java Development Kit)是 Java 程序开发工具包，包含 JRE 和开发人员使用的工具。
 - JRE (Java Runtime Environment) 是 Java 程序的运行时环境，包含 JVM 和运行时所需要的核心类库。
 
-在 Oracle 官网上下载 [jdk1.8.0_271](https://www.oracle.com/java/technologies/javase/jdk17-archive-downloads.html) 和 [jdk-17.0.12](https://www.oracle.com/java/technologies/javase/jdk17-archive-downloads.html) 。这两个版本都是 LTS 版本，我们主要使用 jdk 17，至于 jdk 8，主要用于阅读 jdk 8的部分源码。这部分源码在 jdk 17中是没有的。
+在 Oracle 官网上下载 [jdk1.8.0_271](https://www.oracle.com/java/technologies/downloads/#java8) 和 [jdk-17.0.12](https://www.oracle.com/java/technologies/javase/jdk17-archive-downloads.html) 。这两个版本都是 LTS 版本，我们主要使用 jdk 17，至于 jdk 8，主要用于阅读 jdk 8的部分源码。这部分源码在 jdk 17中是没有的。
 
 接着将 jdk 压缩包解压后，移动到 `/usr/lib/jvm` 目录下。
 
 ```zsh
-tar -zxvf jdk-8u271-linux-x64.tar.gz jdk1.8.0_271/
-sudo mv jdk1.8.0_271 /usr/lib/jvm
+tar -zxvf jdk-8u481-linux-x64.tar.gz jdk1.8.0_481/
+sudo mv jdk1.8.0_481 /usr/lib/jvm
 
 tar -zxvf jdk-17.0.12_linux-x64_bin.tar.gz jdk-17.0.12/
 sudo mv jdk-17.0.12 /usr/lib/jvm
@@ -328,7 +328,7 @@ float f3 = (float)12.3;
 | 算术运算符（7个）      | +、-、*、/、%、++、--                          |
 | 赋值运算符（12个）     | =、+=、-=、*=、/=、%=、>>=、<<=、>>>=、&=、\|=、^=等 |
 | 比较(或关系)运算符（6个） | >、>=、<、<=、==、!=                          |
-| 逻辑运算符（6个）      | &、\|、^、!、&&、\|                           |
+| 逻辑运算符（6个）      | &、\|、^、!、&&、\|\|                         |
 | 位运算符（7个）       | &、\|、^、~、<<、>>、>>>                       |
 | 条件运算符（1个）      | (条件表达式)?结果1:结果2                          |
 | Lambda运算符（1个）  | ->（第18章时讲解）                              |
@@ -401,14 +401,18 @@ System.out.println(s1); //12
 
 字符集：也叫编码表。是一个系统支持的所有字符的集合，包括各国家文字、标点符号、图形符号、数字等。
 
-常见的字符集有：
+在存储的文件中的字符：
 
-- ASCII 码，用于显示现代英语，主要包括控制字符（回车键、退格、换行键等）和可显示字符（英文大小写字符、阿拉伯数字和西文符号）。
-- 拉丁码表，别名 Latin-1，用于显示欧洲使用的语言，包括荷兰语、德语、意大利语、葡萄牙语等。ISO-8859-1 使用单字节编码，兼容 ASCII 编码。
-- GBK：最常用的中文码表。是在 GB2312 标准基础上的扩展规范，使用了双字节编码方案，共收录了 21003 个汉字，完全兼容 GB2312 标准，同时支持繁体汉字以及日韩汉字等。
-- GB18030：最新的中文码表，收录汉字 70244 个。
-- Unicode 编码，也称为统一码、标准万国码。Unicode 将世界上所有的文字用 2 个字节统一进行编码，为每个字符设定唯一的二进制编码，以满足跨语言、跨平台进行文本处理的要求。**Java 字符就是用的 Unicode 编码**。
-	- UTF-8 每次 8 个位传输数据，是在互联网上使用最广的一种 Unicode 的实现方式。
+- ASCII 码，用于显示现代英语，主要包括控制字符（回车键、退格、换行键等）和可显示字符（英文大小写字符、阿拉伯数字和西文符号）。每个字符占用1字节。
+- 拉丁码表，别名 Latin-1，用于显示欧洲使用的语言。ISO-8859-1 使用单字节编码，向下兼容 ASCII。
+- GBK：最常用的中文码表。是在 GB2312 标准基础上的扩展规范，中文字符使用了双字节编码，共收录了 21003 个汉字，兼容 GB2312 标准，同时支持繁体汉字以及日韩汉字等。
+- utf-8：可以用来存储世界范围内主要的语言的所有的字符。使用1-4个不等的字节表示一个字符。中文字符使用3个字节存储的。向下兼容ASCII。
+
+在内存中的字符：
+
+- Unicode，也称为统一码、标准万国码。一个字符(char)占用2个字节。
+
+> 注意：在中文操作系统上，ANSI（美国国家标准学会）编码即为GBK；在英文操作系统上，ANSI编码即为ISO-8859-1。
 
 # 3. 流程控制语句
 
@@ -452,13 +456,13 @@ while(2️⃣循环条件部分)｛
 
 1️⃣初始化部分
 do{
-    3️⃣循环体部分;
-    4️⃣迭代部分;
-}while(2️⃣循环条件部分); 
+    2️⃣循环体部分;
+    3️⃣迭代部分;
+}while(4️⃣循环条件部分); 
 ```
 
 - `do{}while();`最后有一个分号
-- do-while 结构的循环体语句是至少会执行一次，这个和 for 、和 while 是不一样的
+- do-while 结构的循环体语句是至少会执行一次，这点和 for 、while 不一样
 
 如何选择：
 
@@ -484,7 +488,7 @@ Scanner类中提供了获取byte \ short \ int \ long \float \double \boolean \ 
 ```java
 // 创建 Scanner 的对象
 //Scanner 是一个引用数据类型，它的全名称是 java.util.Scanner
-//scanner 就是一个引用数据类型的变量了，赋给它的值是一个对象
+//scanner 就是一个引用数据类型的变量，赋给它的值是一个对象
 //new Scanner(System.in)是一个 new 表达式，该表达式的结果是一个对象
 
 //引用数据类型 变量 = 对象;
@@ -545,7 +549,7 @@ project(工程) - module(模块) - package(包) - class(类)
 在 IntelliJ IDEA 中，Project 是最顶级的结构单元，然后就是 Module。目前，主流的大型项目结构基本都是**多Module**的结构，这类项目一般是**按功能划分**的，比如：user-core-module、user-facade-module 和 user-hessian-module等等，模块之间彼此可以相互依赖，有着不可分割的业务关系。因此，对于一个Project来说：
 
 - 当为**单Module项目**的时候，这个单独的Module实际上就是一个Project。
-- 当为**多Module项目**的时候，多个模块处于同一个Project之中，此时彼此之间具有`互相依赖`的关联关系。
+- 当为**多Module项目**的时候，多个模块处于同一个Project之中，此时彼此之间具有 `互相依赖` 的关联关系。
 - 当然多个模块没有建立依赖关系的话，也可以作为单独一个“小项目”运行。
 
 在一个 module 下，可以声明多个包（package），一般命名规范如下：
@@ -566,16 +570,16 @@ project(工程) - module(模块) - package(包) - class(类)
 
 ### 第1组：提高编写速度（上）
 
-| 说明                                    | 快捷键           |
-| ------------------------------------- | ------------- |
-| 智能提示-edit                             | `alt + enter` |
-| 提示代码模板-insert live template           | ctrl+j        |
-| 使用xx块环绕-surround with ...             | ctrl+alt+t    |
-| 调出生成getter/setter/构造器等结构-generate ... | `alt+insert`  |
-| 自动生成返回值变量-introduce variable ...      | ctrl+alt+v    |
-| 向上移动一行-move line up                   | alt+shift+↑   |
-| 向下移动一行-move line down                 | alt+shift+↓   |
-| 方法的形参列表提醒-parameter info              | `ctrl+p`      |
+| 说明                                    | 快捷键          |
+| ------------------------------------- | ------------ |
+| 智能提示-edit                             | `alt+enter`  |
+| 提示代码模板-insert live template           | ctrl+j       |
+| 使用xx块环绕-surround with ...             | `ctrl+alt+t` |
+| 调出生成getter/setter/构造器等结构-generate ... | `alt+insert` |
+| 自动生成返回值变量-introduce variable ...      | ctrl+alt+v   |
+| 向上移动一行-move line up                   | alt+shift+↑  |
+| 向下移动一行-move line down                 | alt+shift+↓  |
+| 方法的形参列表提醒-parameter info              | `ctrl+p`     |
 
 ### 第2组：提高编写速度（下）
 
@@ -838,4 +842,3 @@ System.out.println(arr1);     // [I@7344699f
 
 System.out.println(arr3);     // [[I@7e9e5f8a
 ```
-
