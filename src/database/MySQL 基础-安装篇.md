@@ -8,7 +8,7 @@ category:
 ---
 # 前言
 
-学习尚硅谷的[《MySQL数据库入门到大牛，mysql安装到优化》](https://www.bilibili.com/video/BV1iq4y1u7vj)的分集1~11和96~103。
+学习尚硅谷的[《MySQL数据库入门到大牛，mysql安装到优化》](https://www.bilibili.com/video/BV1iq4y1u7vj)的分集1到11、96到103。
 
 数据库概述与MySQL安装篇
 
@@ -104,7 +104,7 @@ E-R（entity-relationship，实体-联系）模型中有三个主要概念是：
 sudo pacman -S libaio
 ```
 
-官网下载地址：https://dev.mysql.com/downloads/mysql/。解压 mysql-8.0.45-linux-glibc2.28-x86_64.tar.xz 后得到如下内容：
+官网下载地址：https://dev.mysql.com/downloads/mysql/ 。解压 mysql-8.0.45-linux-glibc2.28-x86_64.tar.xz 后得到如下内容：
 
 ```zsh
 .
@@ -358,7 +358,18 @@ mysql> show variables like 'character%';
 
 ![ 请求到响应过程中字符集的变化](https://vip.123pan.cn/1844935313/obsidian/20260310123045994.png)
 
-##  SQL大小写规范
+## SQL语言的规则与规范
+
+### 基本规则
+
+- SQL 可以写在一行或者多行。为了提高可读性，各子句分行写，必要时使用缩进
+	- 每条命令以 `;` 或 `\g` 或 `\G` 结束
+	- 关键字不能被缩写也不能分行
+- 关于标点符号
+	- 字符串型和日期时间类型的数据可以使用单引号（' '）表示
+	- 列的别名，尽量使用双引号（" "），而且不建议省略as
+
+### SQL大小写规范
 
 MySQL在Linux下数据库名、表名、列名、别名大小写规则是这样的：
 
@@ -376,13 +387,31 @@ SQL编写建议：
 SQL 语句必须以分号结尾。
 ```
 
+### 注释
+
+可以使用如下格式的注释结构：
+
+```txt
+单行注释：#注释文字(MySQL特有的方式)
+单行注释：-- 注释文字(--后面必须包含一个空格。)
+多行注释：/* 注释文字 */
+```
+ 
+### 命名规则
+
+- 数据库、表名不得超过30个字符，变量名限制为29个
+- 必须只能包含 A–Z, a–z, 0–9, `_`共63个字符
+- 数据库名、表名、字段名等对象名中间不要包含空格
+- 必须保证你的字段没有和保留字、数据库系统或常用方法冲突。如果坚持使用，请在SQL语句中使用\`（着重号）引起来
+- 保持字段名和类型的一致性，在命名字段并为其指定数据类型的时候一定要保证一致性。假如数据类型在一个表里是整数，那在另一个表里可就别变成字符型了
+
 ## 图形化管理工具DBeaver
 
 ```zsh
 sudo pacman -S dbeaver
 ```
 
-尝试更改DBeaver 用户界面语言失败，应该和 DBeaver 正在通过 **XWayland**（兼容模式）运行相关。解决方法是修改 `/usr/share/dbeaver/dbeaver.ini` ，在文件末尾添加：
+尝试更改DBeaver 用户界面语言失败，应该和 DBeaver 正在通过 **XWayland**（兼容模式）运行相关。解决方法是修改 `/usr/share/dbeaver/dbeaver.ini` ，在配置文件末尾添加：
 
 ```txt
 -Dswt.autoScale=true
@@ -396,5 +425,11 @@ sudo pacman -S dbeaver
 
 连接远程数据库：
 
-1. 在远程机器上使用ping ip地址 保证网络畅通
-2. 在远程机器上使用telnet命令保证端口号开放访问，telnet ip地址 端口号
+1. 在远程机器上使用`ping ip地址` 保证网络畅通
+2. 在远程机器上使用telnet命令保证端口号开放访问，`telnet ip地址 端口号`
+
+配置选项：
+
+- 修改界面字体：在窗口 > 首选项 > 用户界面 > Apperance > Colors and Fonts 中，修改DBeaver字体中的主字体。
+- 修改编辑器字体：在窗口 > 首选项 > 用户界面 > Apperance > Colors and Fonts 中，修改DBeaver字体中的等宽字体。
+- 设置vim模式：在帮助 > 安装新软件中，在 Work with 输入框中粘贴以下 Vrapper 的官方更新地址：http://vrapper.sourceforge.net/update-site/stable ，下载插件 Vrapper。

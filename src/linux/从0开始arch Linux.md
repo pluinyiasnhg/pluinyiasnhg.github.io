@@ -332,6 +332,8 @@ sudo evtest
 > 6. 关闭 KDE wallet service。在 KDE Wallet 中不勾选 Enable the KDE wallet subsystem。如果没找到，安装 kwalletmanager。
 > 7. 设置显示器缩放比例时，建议是整数倍。非整数倍的时候，我遇到过屏幕上有一条水平白线，但是在windows上屏幕又是正常的情况。
 > 8. 我希望每次开机，不保存上次的会话，避免上次会话未关闭的应用+开机自启应用全部在登录后冒出来。在 Desktop Session > On login, launch apps that were open 中勾选 Start with an empty session。
+> 9. 保存文件打开的默认方式：~/.config/mimeapps.list
+> 10. vim打开文件后窗口最大化：打开系统设置 → 窗口管理 → 窗口规则，点击添加新规则，在窗口匹配标签页，输入vim，在大小和位置标签页，勾选 最大化水平 和 最大化垂直，点击 确定 并应用。
 
 - [x] keyd 实现capslock点按为esc，长按为ctrl。
 
