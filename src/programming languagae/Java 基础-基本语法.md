@@ -623,7 +623,7 @@ project(工程) - module(模块) - package(包) - class(类)
 
 | 说明                                   | 快捷键              |
 | ------------------------------------ | ---------------- |
-| 格式化代码-reformat code                  | `ctrl+alt+l`     |
+| **格式化代码-reformat code**              | `ctrl+alt+l`     |
 | 使用单行注释-comment with line comment     | ctrl + /         |
 | 使用/取消多行注释-comment with block comment | ctrl + shift + / |
 

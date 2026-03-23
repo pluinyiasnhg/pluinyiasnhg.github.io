@@ -75,11 +75,6 @@ category:
 	- pro 版本可以把一些数据可视化，比如影响因子、被引用数。
 	- 免费版功能较少，丰富 Zotero 中间窗格的显示内容，比如阅读时间、期刊标签等。
 
-## DOI Manager
-
-- 项目地址：[戳这](https://github.com/bwiernik/zotero-shortdoi#readme)
-- 评价：
-	- 自动检索 doi，获取文献的长、短doi，清理无效 doi
 
 ## Jasminum 茉莉花 
 
@@ -114,16 +109,6 @@ category:
 - 评价：
 	- 点击标签页下的图片可以跳转到文献对应位置
 	- 双击图片是跳转+复制图片
-
-## SciPDF
-
-- 项目地址：[戳这](https://github.com/syt2/zotero-scipdf)
-- 用法：
-	- 选中条目，右键菜单中会出现“查找全文”选项。没有安装该插件，也有这个选项。
-- 评价：
-	- 根据 doi，自动从 Scihub 上下载pdf，所以最好搭配 DOI Manager
-	- Zotero 本身就可以通过添加标识符，如 doi，获取到文献的元数据。配合插件 SciPDF 补全了文献的附件
-	- Sci-Hub 自2021年陷入法律问题，从2021年起的文献无法下载。这就显得插件鸡肋
 
 ## Tara 蒲公英
 
