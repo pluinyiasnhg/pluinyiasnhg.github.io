@@ -500,6 +500,27 @@ Python 的 `match` 语句提供了强大的模式匹配功能，可以：
 - 使用守卫条件进行更复杂的匹配
 - 提取和绑定变量
 
+### 条件表达式
+
+**表达式**：执行后最终能得到一个值的代码，就是表达式，例如这些都是表达式：
+
+```python
+3 + 5
+'abc' * 3
+5 > 3
+'y' in 'Python'
+len('hello')
+```
+
+**条件表达式：** 根据不同的条件，得到不同的值，又称三元表达式，也叫三目运算符。
+
+```python
+# 什么时候适合用条件表达式？简单的二选一场景，可以让代码更紧凑。
+rain = True food = '外卖' if rain else '出去吃'
+is_vip = True disscount = 0.8 if is_vip else 1.0
+is_login = True msg = '欢迎回来！' if is_login else '请先登录！'
+```
+
 ## 循环语句
 
 while 循环：

@@ -461,6 +461,7 @@ Rime输入法的配置文件结构如下：
 ├── double_pinyin_flypy.custom.yaml # 自定义小鹤双拼文件，覆盖官方配置
 ├── double_pinyin_flypy.schema.yaml # 官方小鹤双拼配置文件
 ├── luna_pinyin.userdb
+├── opencc  # 基于OpenCCDict的加载Emoji
 ├── symbols.custom.yaml # 自定义标点符号候选，比如输入顿号，会提供全角、半角格式的多种顿号，覆盖官方的symbols.yaml
 ├── sync 
 └── user.yaml
@@ -487,7 +488,16 @@ patch:
 
 `double_pinyin_flypy.schema.yaml` [gist](https://gist.githubusercontent.com/WithdewHua/ce9b1dc076b191feb6e6a9ec669f71cd/raw/322a1c7bc196606301b49c0688d31fbeea9f5da1/double_pinyin_flypy.schema.yaml)
 
+```yaml
+  # 设置符号
+  "punctuator/half_shape":
+    "[": ["[", "【", "〔", "［" ]
+    "]": [ "]", "】", "〕", "］" ]
+```
+
 `symbols.custom.yaml` [gist](https://gist.githubusercontent.com/WithdewHua/ce9b1dc076b191feb6e6a9ec669f71cd/raw/322a1c7bc196606301b49c0688d31fbeea9f5da1/symbols.custom.yaml)
+
+`opencc文件夹` [github](https://github.com/WithdewHua/rime-configuration/tree/main/Rime/Common/opencc)
 
 ## 通讯相关
 
@@ -624,6 +634,14 @@ public void test$var1$() {
 ```zsh
 yay -S pycharm
 ```
+
+安装Jupyter notebook 和 Jupyter lab
+
+```zsh
+sudo pacman -S jupyter-notebook jupyterlab
+```
+
+> 天杀的，为什么我在Pycharm中打开ipynb文件，字体和单元格都超级大。
 
 - [x] neovim + lazyvim
 
@@ -815,6 +833,29 @@ Exec=env QT_IM_MODULE=fcitx /usr/bin/wps %F
 
 这个方法实测有效：使用后，我可以双击以wps窗口打开word、ppt、excel等文件，不过多组件模式下，我又没法使用中文输入法了。此时，切换回整合模式，神奇的事情发生了：双击能打开上述文件，且文件内可以使用中文输入。美中不足的是，这没法解决“上述文件图标不是wps图标”的问题。
 
+WPS 即使关闭了界面，后台往往还挂着 `wpscloudsvr`、`wpscenter` 或 `prometheus`。如果这些进程卡死，新开 WPS 就会在初始化 Qt 时直接崩溃。
+
+```zsh
+# 强杀所有 WPS 相关进程
+killall -9 wps wpsoffice wpscloudsvr wpscenter prometheus
+```
+
+当你执行 `killall` 时，你强制清理了这些卡死的组件，所以能短暂打开。但只要 WPS 运行，这些组件就会重新启动并在后台崩溃/卡住，最终导致主程序再次无法初始化。
+
+在 Arch Linux 上，最彻底的解决办法是**禁用 WPS 的后台自动更新和云服务**：
+
+```zsh
+# 尝试使用这个环境变量组合启动
+export wps_is_no_cloud=true
+wps
+
+# 如果上面的方法有效，可以通过修改文件让它永远不启动那个容易卡死的后台
+# 找到 wpscloudsvr 和 wpscenter 的路径（通常在 /usr/lib/office6/ 下）
+sudo chmod -x /usr/lib/office6/wpscloudsvr
+sudo chmod -x /usr/lib/office6/wpscenter
+sudo chmod -x /usr/lib/office6/prometheus
+```
+
 - [x] 字典 Goldendict-ng，词典文件保存到 `~/.goldendict`目录 。
 
 ```zsh
@@ -883,7 +924,7 @@ yay -S typora-free-cn
 yay -S xmind
 ```
 
-- 阅读器 [KOReader](https://github.com/koreader/koreader?tab=readme-ov-file) 
+- [x] 阅读器 [KOReader](https://github.com/koreader/koreader?tab=readme-ov-file) 
 
 ```zsh
 yay -S koreader-bin
@@ -904,7 +945,6 @@ sudo pacman -S flameshot gwenview drawio-desktop --needed
 
 > [!info] 解决flameshot 截图在wayland无法置顶
 > 在系统设置 -> 窗口管理 -> 窗口规则中，添加一条新规则：选择 `精确匹配`，值填写 `flameshot`，点击 `添加属性`，搜索并勾选 “置顶（Keep above）”。
-
 
 - [x] 图床 PicList 
 
