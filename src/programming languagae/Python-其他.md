@@ -1089,7 +1089,7 @@ GIL锁和之前代码中使用的 Lock/RLock 不是一个东西。
 
 - **协程不是线程，也不是进程**：协程是程序员在用户态，用代码“设计出来”的任务切换机制。操作系统不知道协程的存在，并且 CPU 看不见协程。
 - **协程发生在一个线程内部**：协程不是线程之间的切换，而是线程内部多个任务之间的切换。
-- **协程的目标是尽量减少线程切换**：- 在单线程场景下，最大化 CPU 利用率，特别适合 IO 密集型任务。
+- **协程的目标是尽量减少线程切换**：在单线程场景下，最大化 CPU 利用率，特别适合 IO 密集型任务。
 
 ## 协程对象
 
@@ -1137,6 +1137,36 @@ await 关键字有三个作用：
 	- 执行 await 后面的对象时，遇到了【await I/O操作】，事件循环会进行任务调度；否则，事件循环不干预
 3. **恢复**：当 await 后的对象执行完毕，事件循环会恢复之前被挂起的协程，该协程会从当时挂起的位置继续执行，并拿到返回值。
 	- 注意：await 后面只能写『可等待对象』，常见可等待对象有：协程对象、Future对象、Task对象。
+
+### 自动管理资源
+
+```python
+# 创建 MCP 客户端会话对象
+# 1. 执行到 await 时，当前协程被挂起
+# 2. ClientSession() 开始异步执行（如网络请求）
+self.session = await self.exit_stack.enter_async_context(
+    ClientSession(self.stdio, self.write)
+)
+# 直接使用 self.session，无需担心关闭
+```
+
+`exit_stack.enter_async_context()` 的主要作用就是自动管理异步资源的生命周期，确保资源的正确打开和关闭。
+
+1. **自动关闭**：当 `exit_stack` 退出时（比如程序结束、发生异常、主动清理），它会**自动调用** `ClientSession` 的 `__aexit__` 方法来关闭会话
+2. **异常安全**：即使中间代码抛出异常，会话也会被正确关闭，不会造成资源泄漏
+3. **简化代码**：避免了手动写 `try...finally` 或 `async with` 的繁琐
+
+```python
+# 手动管理生命周期
+self.session = ClientSession(self.stdio, self.write)
+await self.session.__aenter__()  # 手动进入上下文
+
+try:
+    # 使用会话...
+    pass
+finally:
+    await self.session.__aexit__(None, None, None)  # 手动退出上下文
+```
 
 ### 多个任务同步执行
 

@@ -93,8 +93,8 @@ mount --mkdir /dev/nvme0n1p3 /mnt/boot
 pacstrap -K /mnt base linux base-devel linux-firmware alsa-utils pipewire pipewire-alsa pipewire-pulse pipewire-jack wireplumber networkmanager bluez bluez-utils openssh ntfs-3g reflector intel-ucode gvim git zsh sudo
 ```
 
-> **`vim` 包**：这是 Arch 默认的轻量版。为了保持极简，它在编译时**禁用了**很多高级功能。
-> **`gvim` 包**：这是“全功能版”。虽然名字叫 GUI Vim，但安装它会同时提供一个**终端版的 `vim` 命令**。
+> `vim` 包：这是 Arch 默认的轻量版。为了保持极简，它在编译时**禁用了**很多高级功能。
+> `gvim` 包：这是“全功能版”。虽然名字叫 GUI Vim，但安装它会同时提供一个**终端版的 `vim` 命令**。
 
 ## 配置系统
 
@@ -335,7 +335,7 @@ sudo evtest
 > 6. 关闭 KDE wallet service。在 KDE Wallet 中不勾选 Enable the KDE wallet subsystem。如果没找到，安装 kwalletmanager。
 > 7. 设置显示器缩放比例时，建议是整数倍。非整数倍的时候，我遇到过屏幕上有一条水平白线，但是在windows上屏幕又是正常的情况。
 > 8. 我希望每次开机，不保存上次的会话，避免上次会话未关闭的应用+开机自启应用全部在登录后冒出来。在 Desktop Session > On login, launch apps that were open 中勾选 Start with an empty session。
-> 9. 保存文件打开的默认方式：~/.config/mimeapps.list
+> 9. 保存文件打开的默认方式：`~/.config/mimeapps.list`
 > 10. vim打开文件后窗口最大化：打开系统设置 → 窗口管理 → 窗口规则，点击添加新规则，在窗口匹配标签页，输入vim，在大小和位置标签页，勾选 最大化水平 和 最大化垂直，点击 确定 并应用。
 
 - [x] keyd 实现capslock点按为esc，长按为ctrl。
@@ -358,7 +358,12 @@ overload_timeout = 200
 [main]
 capslock = overload(control, esc)
 leftctrl = capslock
+
+# 重启 keyd 服务
+sudo systemctl restart keyd
 ```
+
+> 按键名获取：`sudo keyd monitor` 启动后，想知道哪个按键的名字就单击下这个键。
 
 ## 浏览器
 
@@ -426,7 +431,7 @@ sudo vim /etc/fonts/conf.d/64-language-selector-prefer.conf
 
 ## 输入法 
 
-- [x] 中文输入框架 fcitx5
+- [x] 输入法框架 fcitx5
 
 ```bash
 sudo pacman -S fcitx5-im
@@ -441,11 +446,19 @@ XMODIFIERS=@im=fcitx
 
 > Detect GTK_IM_MODULE and QT_IM_MODULE being set and Wayland Input method frontend is working. It is recommended to use Wayland input method frontend. For more details see https://fcitx-im.org/wiki/Using_Fcitx_5_on_Wayland#KDE_Plasma
 > 不需要设置 `QT_IM_MODULE` 和 `QTK_IM_MODULE` 。
+> Run chromium/electron application with `--enable-features=UseOzonePlatform --ozone-platform=wayland --enable-wayland-ime`
+> Gtk/Qt application that only works under X11 may still need to set `GTK_IM_MODULE` or `QT_IM_MODULE`
 
 fcitx5 只提供基础的英语支持，想要中文支持，需要安装输入方法引擎 Input Method Engine (IME)，这里用 rime
 
 ```bash
 sudo pacman -S fcitx5-rime
+```
+
+日语输入引擎 fcitx5-mozc：
+
+```zsh
+sudo pacman -S fcitx5-mozc
 ```
 
 - [x] Rime
@@ -506,7 +519,7 @@ patch:
 - [x] Wemeet
 
 ```zsh
-yay -S wechat-appimage linuxqq-appimage wemeet-bin
+yay -S wechat-appimage linuxqq wemeet-bin
 ```
 
 微信频繁出现“运行一段时间就会崩溃”的问题（还是会崩溃）：
@@ -522,6 +535,42 @@ Exec=env DESKTOPINTEGRATION=false GDK_BACKEND=x11 QT_QPA_PLATFORM=xcb /usr/bin/w
 
 # 刷新菜单缓存
 update-desktop-database ~/.local/share/applications/
+```
+
+QQ Xwayland client 泄漏，QQ把256个 client 全吃光。
+
+```zsh
+❯ xlsclients
+Maximum number of clients reached
+xlsclients:  unable to open display ":0"
+❯ lsof -U | grep X11 | awk '{print $1}' | sort | uniq -c | sort -nr | head
+    256 Xwayland
+      2 kwin_wayl
+```
+
+在终端打开如下脚本，检测xwayland的变化。此时我将qq关闭，xwayland的 x11 client数量从70减少到35 。
+
+```zsh
+while true; do
+  clear
+  date
+  echo "---- X11 clients by process ----"
+  lsof -U | grep X11 | awk '{print $1}' | sort | uniq -c | sort -nr | head
+  echo
+  echo "Total:"
+  lsof -U | grep X11 | wc -l
+  sleep 2
+done
+```
+
+[解决方法](https://aur.archlinux.org/packages/linuxqq#comment-1062481)：
+
+```zsh
+git clone https://github.com/Jerry-Terrasse/fix-linuxqq-x11-leak 
+cd fix-linuxqq-x11-leak 
+make build 
+make trace # 观察输出，找到重复调用的wrapper.node offset 
+make block QQ_X11_TARGET_OFFSET=0x5cb0c6b # 当前版本5:3.2.25_45758-1是这个地址，其他版本可能不同
 ```
 
 - [x] Telegram、Discord
@@ -546,6 +595,11 @@ sudo pacman -S thunderbird
 
 Thunderbird 有插件市场，我只用过 BulkDelete，曾经有段时间不常看邮箱，因此每次打开邮箱都有一堆消息，BulkDelete可以帮助我批量删除邮件。
 
+Thunderbird 添加又删除谷歌邮箱后，去除每次开屏都会跳出该邮箱的验证：
+
+1. 进入 `~/.thunderbird/` ，找到一个以 `.default-release` 结尾的文件夹。
+2. 进入这个个人配置文件夹，我们需要编辑两个文件 prefs.js 和 `user.js`：这两个文件存储了各种设置。搜索那个Gmail地址，如果找到与之相关的行，可以整行删除。但修改前最好备份原文件。
+
 ## 编程
 
 ### 编辑器
@@ -560,13 +614,28 @@ yay -S visual-studio-code-bin
 
 Monokai Pro 主题激活：打开VS Code的命令面板，输入 Monokai Pro: enter license，回车后输入：`id@chinapyg.com` ，回车后输入lincese key：d055c-36b72-151ce-350f4-a8f69
 
+Java环境扩展插件安装：**Extension Pack for Java** 插件集合，集成了多个与 Java 开发相关的插件，安装后能为开发者提供完整的 Java 开发环境，涵盖从代码编写、调试、测试到项目管理等多方面功能 。其包含的主要插件及作用如下：
+
+- **Language Support for Java(TM) by Red Hat**：提供语法高亮、智能代码补全、代码检查、代码格式化、代码导航以及重构支持等功能，辅助高效编写和优化 Java 代码。
+- **Project Manager for Java**：可在编辑器中管理多个 Java 项目，实现快速切换，导入本地 Java 项目，可视化展示项目模块、包和文件结构。
+- **Debugger for Java**：实现轻量级 Java 程序调试，可设置断点，调试时查看变量值、对象属性和调用栈，追踪程序执行流程以排查问题。
+- **Test Runner for Java**：支持 JUnit 和 TestNG 等测试框架，方便运行和调试 Java 测试用例，展示测试结果及详细日志，助力开发者定位问题。
+- **Maven for Java**：用于管理 Maven 项目，能创建新项目，管理项目依赖，执行 Maven 构建任务，如清理、编译、打包项目等。
+- **Gradle for Java**：针对 Gradle 构建工具，能创建 Gradle 项目，运行 Gradle 任务，管理项目构建、测试流程，查看 Gradle 任务和工程依赖 。
+
+- [x] Cursor
+
+```zsh
+yay -S cursor-bin
+```
+
 - [x] IntelliJ IDEA 
 
 ```zsh
 yay -S intellij-idea-ultimate-edition
 ```
 
-[激活许可证教程](https://blog.idejihuo.com/jetbrains/pycharm-2025-3-3-permanent-activation-tutorial-free-cracking-tool.html)：
+[激活许可证教程](https://blog.idejihuo.com/jetbrains/pycharm-2025-3-3-permanent-activation-tutorial-free-cracking-tool.html)（已失效，不过网站上有新教程，可以试试）：
 
 在VM配置文件 `~/.config/JetBrains/IntelliJIdea2025.3/idea64.vmoptions` 中粘贴如下内容
 
@@ -634,6 +703,9 @@ public void test$var1$() {
 ```zsh
 yay -S pycharm
 ```
+
+> 快捷键：
+> 查看文件结构 `Ctrl+0`
 
 安装Jupyter notebook 和 Jupyter lab
 
@@ -747,7 +819,9 @@ sudo archlinux-java set java-21-openjdk
 
 ### Python
 
-- [x] Python 的 [miniconda](https://www.anaconda.com/docs/getting-started/miniconda/install#linux)
+- [ ] ~~Python 的 [miniconda](https://www.anaconda.com/docs/getting-started/miniconda/install#linux)~~
+
+> 我改用 uv 管理python包
 
 我是先安装并切换到了 zsh，再安装 miniconda。
 
@@ -761,6 +835,20 @@ source ~/.zshrc
 
 # 测试安装是否成功
 conda list
+```
+
+- [x] Python 包管理器 uv
+
+```zsh
+sudo pacman -S uv
+```
+
+### SQL
+
+- [x] DataGrip
+
+```zsh
+yay -S datagrip datagrip-jre
 ```
 
 ### node.js
@@ -777,6 +865,17 @@ pnpm setup
 pnpm add -g yuque-dl
 ```
 
+### Julia
+
+[官方推荐 Julia 教程](https://julialang.org/learning/tutorials/)
+
+```zsh
+# 安装julia
+sudo pacman -S julia
+
+# 验证juila
+julia
+```
 
 ### git
 
@@ -906,10 +1005,10 @@ yay -S koreader-bin
 
 配置文件在 `~/.config/koreader`
 
-- [x] chatbox
+- [x] 大模型管理客户端 cherry studio
 
 ```zsh
-yay -S chatbox-bin
+yay -S cherry-studio-bin
 ```
 
 - [x] Typora 0.11，typora最后一个免费版本。 
@@ -922,12 +1021,6 @@ yay -S typora-free-cn
 
 ```zsh
 yay -S xmind
-```
-
-- [x] 阅读器 [KOReader](https://github.com/koreader/koreader?tab=readme-ov-file) 
-
-```zsh
-yay -S koreader-bin
 ```
 
 - calibre
@@ -1005,7 +1098,7 @@ sudo pacman -S steam
 
 ProtonUp-QT 是专门用来切换Steam游戏所使用的Proton版本。ProtonTricks 则是用于给Steam游戏安装额外的Windows exe套件。
 
-
+Steam启动的游戏的界面窗口太小：[Gamescope缩放游戏解析度+ Linux开机直接进入Steam Big Picture Mode](https://ivonblog.com/posts/steam-gamescope/)
 
 - [x] wine
 
@@ -1261,6 +1354,144 @@ RUN+="/usr/bin/modprobe -r hid_magicmouse", \
 RUN+="/usr/bin/modprobe hid_magicmouse"
 ```
 
+## 外接显卡
+
+oculink 外接显卡重启电脑后，`neofetch` 识别出了4070显卡，但是 `nvidia-smi` 显示：
+
+```txt
+NVIDIA-SMI has failed because it couldn't communicate with the NVIDIA driver. Make sure that the latest NVIDIA driver is installed and running.
+```
+
+```zsh
+❯ lspci | grep -i nvidia
+02:00.0 VGA compatible controller: NVIDIA Corporation AD104 [GeForce RTX 4070] (rev a1)
+02:00.1 Audio device: NVIDIA Corporation AD104 High Definition Audio Controller (rev a1)
+```
+
+### 安装nvidia驱动
+
+首先，从 [nouveau NVIDIA代号查询页](https://nouveau.freedesktop.org/CodeNames.html) 中查找外接显卡的系列代号(例如：NV110, NVC0)。我的4070的代号是 NV190，架构是 Ada Lovelace。
+
+```zsh
+sudo pacman -Syu
+# nvidia-open 是内核模块
+# nvidia-utils 提供了驱动正常工作所需的一系列核心组件
+# lib32-nvidia-utils 解决游戏兼容性
+sudo pacman -S nvidia-open nvidia-utils lib32-nvidia-utils linux-headers --needed
+```
+
+开启 DRM 模式设置：Wayland 必须在内核启动早期就认出 NVIDIA 驱动，否则会出现“黑屏”或“无法进入桌面”。
+
+```zsh
+# 编辑 mkinitcpio.conf
+sudo vim /etc/mkinitcpio.conf
+
+# 在 MODULES=(...) 括号内添加驱动名称：
+MODULES=(nvidia nvidia_modeset nvidia_uvm nvidia_drm)
+
+# 生成新的镜像
+sudo mkinitcpio -P
+```
+
+配置内核参数 (Wayland 核心配置)，这一步确保 Wayland 合成器（如 GNOME/KDE）能正确调用显卡，防止不接显卡时驱动卡死。
+
+```zsh
+# 编辑 GRUB 配置
+sudo vim /etc/default/grub
+
+# 找到 GRUB_CMDLINE_LINUX_DEFAULT，在引号内加入 nvidia-drm.modeset=1
+# 例如：GRUB_CMDLINE_LINUX_DEFAULT="loglevel=3 quiet nvidia-drm.modeset=1"
+
+# 更新 GRUB
+sudo grub-mkconfig -o /boot/grub/grub.cfg
+```
+
+重启电脑后，此时再使用 `nvidia-smi` 就输出正常了。
+
+```zsh
+# 测试pytorch gpu 版本能否正常运行
+conda create -n pytorch-2.11.0-gpu python=3.12
+conda activate pytorch-2.11.0-gpu
+
+pip3 install torch torchvision  # 安装过程中会一并安装cuda_toolkit 和 cudnn
+
+❯ python
+>>> import torch
+>>> torch.cuda.is_available()
+True
+```
+
+专业“跑分”Phoronix Test Suite：如果你想获取一个权威的分数，甚至和网上其他人比一比，那么 phoronix-test-suite 就是不二之选。它可以一键运行包含 unigine-heaven、gputest 等在内的众多测试项目，并将结果上传到 OpenBenchmarking.org 网站，方便你和其他配置进行详细对比
+
+- 游戏性能测试 (Real-time Gaming)
+	- pts/cs2：最推荐。可以直接反映显卡运行主流竞技游戏的帧数水平。
+- 理论性能与计算测试 (Compute & Synthetic)
+	- pts/rtiv (Ray Tracing In Vulkan)：光追专项测试。专门测试 Vulkan API 下的光线追踪性能。
+	- pts/vkpeak：理论峰值测试。类似甜甜圈，但它不是跑游戏画面，而是直接测试 GPU 的 FP32（单精度浮点）、INT32 等算力极限，用于分析硬件的理论性能。
+	- pts/mixbench：混合计算测试，常用于测试 GPU 在混合精度计算下的稳定性。
+- AI 测试 (AI & Utilities)
+	- pts/hashcat：密码破解测试。测试 GPU 的 OpenCL/CUDA 计算能力。如果显卡在这个测试中分数很高，说明它跑 AI 或渲染任务时算力释放良好。
+	- pts/waifu2x-ncnn：图像处理/AI 放大测试。专门测试 Vulkan 加速下的 AI 图像处理速度，反映 GPU 在推理任务中的效率。
+	- pts/opencl-benchmark：通用计算测试。测试 OpenCL 驱动的性能表现。
+
+```zsh
+yay -S phoronix-test-suite
+
+# 测试
+# 这里的 prime-run是让程序在独显下运行
+# 不加这一条，我的笔记本会用核显运行
+prime-run phoronix-test-suite benchmark pts/vkpeak
+
+# 删除测试结果
+phoronix-test-suite remove-result  # 运行后会列出所有保存的结果文件
+
+# 删除测试程序，以 unigine-heaven 为例
+phoronix-test-suite remove-installed-test pts/unigine-heaven
+```
+
+RTX 4070 vkpeak 性能对比表：
+
+| 测试项目 (单位: GFLOPS/GIOPS)  | 测试结果        | RTX 4070 标准值       | 性能偏差       |
+| ------------------------ | ----------- | ------------------ | ---------- |
+| **FP32-Scalar (单精度标量)**  | **21,552**  | ~19,800 - 20,500   | **+5%~8%** |
+| **FP32-Vec4 (单精度向量)**    | **21,371**  | ~19,500 - 20,200   | **+6%**    |
+| **FP16-Scalar (半精度标量)**  | **32,256**  | ~31,000 - 32,500   | 持平         |
+| **FP16-Matrix (半精度矩阵)**  | **128,358** | ~118,000 - 125,000 | **+3%**    |
+| **FP64-Scalar (双精度标量)**  | **507.72**  | ~310 - 550         | 正常范围       |
+| **INT32-Scalar (整型标量)**  | **16,122**  | ~14,500 - 15,500   | **+4%**    |
+| **INT16-Scalar (整型标量)**  | **13,347**  | ~12,500 - 13,500   | 持平         |
+| **INT8-Dotprod (8位点积)**  | **15,166**  | ~14,000 - 15,000   | 持平         |
+| **INT8-Matrix (8位矩阵)**   | **255,336** | ~240,000 - 250,000 | **+2%**    |
+| **BF16-Matrix (BF16矩阵)** | **64,159**  | ~60,000 - 63,000   | **+2%**    |
+
+> 注：标准值参考自 OpenBenchmarking (Phoronix Test Suite) 在 Linux 环境下的 RTX 4070 典型运行数据。由谷歌的AI模式搜索提供表中的RTX 4070标准值。
+
+### 按需调用
+
+我在使用 phoronix-test-suite 测试显卡时，发现测试程序在用显卡跑动画。而且重启电脑后，显卡风扇就停止转动了。
+
+```zsh
+# prime-run 专门用于切换显卡
+sudo pacman -S nvidia-prime
+```
+
+```zsh
+# 安装切换显卡工具
+yay -S envycontrol
+
+# 切换到 NVIDIA 模式
+# <MODE> 包括：
+# - integrated 集显
+# - hybrid 混合
+# - nvidia nvidia独显
+sudo envycontrol -s <MODE>
+
+# 重置
+sudo envycontrol --reset
+```
+
+> 不知道为什么，我的笔记本开不了 `nvidia` 模式，一旦开启后，每次系统开机时，都会出现 Failed to start NVIDIA Persistance Daemon。虽然能进入桌面环境，但是无论有无外接显卡，都只能检测出核显。
+
 ## gnome 插件商店
 
 - [ ] 触控板手势 touchegg，touchegg 是为 x11 设计的，wayland下几乎没法使用。
@@ -1346,20 +1577,20 @@ pacman -Qo /路径/文件
 
 ## Yay（AUR 助手）
 
+[项目地址](https://github.com/jguer/yay)
+
 ### 基本操作
 
 ```bash
 # 同步并更新系统（包括 AUR）
-yay -Syu
+# yay -Syu
+yay
 
-# 安装 AUR 包
+# 安装（更新） AUR 包
 yay -S 包名
 
 # 搜索包（包括 AUR）
 yay 关键词
-
-# 搜索并安装
-yay -Ss 关键词
 
 # 卸载包
 yay -R 包名
@@ -1368,20 +1599,15 @@ yay -R 包名
 ### 查询操作
 
 ```bash
-# 查看已安装的包（包括 AUR）
-yay -Q
-
 # 查看包信息
-yay -Si 包名
+yay -Si 包名  # 远程包信息
+yay -Qi 包名  # 已安装包信息
 
 # 清理构建文件
 yay -Yc
 
-# 查看统计数据
+# 检查更新状态，查看当前哪些应用可以更新
 yay -Ps
-
-# 查看新闻
-yay -Pw
 ```
 
 ## 常用组合命令
@@ -1399,16 +1625,6 @@ sudo pacman -Syu && sudo pacman -Rns $(pacman -Qtdq)
 yay -Sua && yay -Yc
 ```
 
-### 搜索和安装
-
-```bash
-# 搜索并选择性安装
-yay 包名  # 会显示交互式列表
-
-# 清理缓存后重新安装包
-sudo pacman -Scc && sudo pacman -S 包名
-```
-
 ### 故障排除
 
 ```bash
@@ -1423,37 +1639,152 @@ sudo pacman -S $(pacman -Qnq)  # 仅原生包
 
 1. **定期更新**：建议每周至少更新一次系统
 
-   ```bash
-   sudo pacman -Syu
-   ```
+```bash
+sudo pacman -Syu
+```
 
 2. **备份已安装包列表**：
 
-   ```bash
-   pacman -Qqe > pkglist.txt
-   # 恢复安装
-   sudo pacman -S - < pkglist.txt
-   ```
+```bash
+pacman -Qqe > pkglist.txt
+# 恢复安装
+sudo pacman -S - < pkglist.txt
+```
 
 3. **查看更新日志**：
 
-   ```bash
-   pacman -Qc 包名
-   ```
+```bash
+pacman -Qc 包名
+```
 
 # CLI
 
-## 文件管理器 nnn
+## 文件下载 curl wget
+
+```zsh
+curl -LsSf https://example.com/file.txt -o output.txt
+```
+
+- **-L, --location**：跟随重定向。如果服务器返回 3xx 重定向响应，curl 会自动请求新的 URL
+- **-s, --silent**：静默模式。不显示进度条或错误信息
+- **-S, --show-error**：与 `-s` 一起使用时，仍然显示错误信息
+- **-f, --fail**：失败时不输出 HTML 错误页面。服务器返回 HTTP 错误时（如 404、500），curl 会以非零状态码退出
+- `-o <file>`：指定输出文件名
+
+```zsh
+wget -qO output.txt https://example.com/file.txt
+```
+
+- **-q, --quiet**：静默模式，不输出任何信息
+- `-O <file>, --output-document=<file>`：指定输出文件名。如果不指定，默认使用远程文件名
+
+wget 支持递归下载 `-r, --recursive` ，curl不支持递归下载。
+
+## 压缩解压 zip 7z rar
+
+zip 压缩
+
+```zsh
+# 密压缩文件
+zip -er archive.zip file1 file2 folder/
+
+# 加密压缩目录
+zip -er archive.zip folder/
+
+# 指定密码（明文）
+zip -er -P "yourpassword" archive.zip file1
+```
+
+unzip 解压
+
+```zsh
+# 指定密码
+unzip -P "yourpassword" archive.zip
+
+# 解压到指定目录
+unzip -d /path/to/destination -P "yourpassword" archive.zip
+```
+
+7z 压缩
+
+```zsh
+# 加密压缩为7z格式
+7z a -p"yourpassword" archive.7z file1 file2 folder/
+
+# 加密ZIP格式
+7z a -p"yourpassword" -tzip archive.zip file1
+
+# 分卷压缩（每个100MB）
+7z a -v100m -p"yourpassword" archive.7z largefile.iso
+```
+
+7z 解压
+
+```zsh
+# 交互式输入密码
+7z x archive.7z
+
+# 指定密码
+7z x -p"yourpassword" archive.7z
+
+# 解压到指定目录
+7z x -p"yourpassword" -o/path/to/destination archive.7z
+
+# 列出加密压缩包内容
+7z l -p"yourpassword" archive.7z
+```
+
+rar 压缩
+
+```zsh
+# 加密压缩
+rar a -p"yourpassword" archive.rar file1 file2
+
+# 加密并隐藏文件名
+rar a -hp"yourpassword" archive.rar folder/
+```
+
+unrar 解压
+
+```zsh
+# 解压整个文件
+unrar x -p"yourpassword" archive.rar
+
+# 解压到当前目录
+unrar e -p"yourpassword" archive.rar
+
+# 列出加密文件内容
+unrar l -p"yourpassword" archive.rar
+```
+
+> zsh 的插件 x 也可以用于解压。
+
+## 文件管理 nnn
 
 [项目地址](https://github.com/jarun/nnn?tab=readme-ov-file)
 
 > `nnn` 可以分析磁盘使用情况、批量重命名、启动应用程序和选择文件。插件仓库拥有大量插件，可以进一步扩展功能，例如实时预览、(卸载)挂载磁盘、查找和列出、文件/目录差异、上传文件。一个补丁框架托管了大量用户提交的、主观性强的补丁。
+> `nnn` 也适配 android 系统上的 termux 终端。
 
-`nnn` 也适配 android 系统上的 termux 终端。
+
 
 ## 文件搜索 ripgrep
 
 [项目地址](https://github.com/BurntSushi/ripgrep)
+
+## btop
+
+[项目地址](https://github.com/aristocratos/btop)
+
+```zsh
+sudo pacman -S btop
+```
+
+> 卸载不了plasma-systemmonitor，[plasma-meta](https://archlinux.org/packages/extra/any/plasma-meta/) 捆绑安装该应用。
+
+## Claude Code
+
+![[AI IDE#Claude Code CLI]]
 
 ## 云文件列表程序 OpenList
 
@@ -1479,3 +1810,4 @@ sudo pacman -S $(pacman -Qnq)  # 仅原生包
 # 下载时候关闭代理工具
 yuque-dl "https://www.yuque.com/yuque/thyzgp" -t "verified_books的值"
 ```
+
