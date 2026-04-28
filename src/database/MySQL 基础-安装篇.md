@@ -104,7 +104,7 @@ E-R（entity-relationship，实体-联系）模型中有三个主要概念是：
 sudo pacman -S libaio
 ```
 
-官网下载地址：https://dev.mysql.com/downloads/mysql/ 。解压 mysql-8.0.45-linux-glibc2.28-x86_64.tar.xz 后得到如下内容：
+官网下载地址： https://dev.mysql.com/downloads/mysql/ 。解压 mysql-8.0.45-linux-glibc2.28-x86_64.tar.xz 后得到如下内容：
 
 ```zsh
 .
@@ -250,7 +250,9 @@ sudo systemctl status mysqld
 
 ## MySQL使用演示
 
-查看所有的数据库，以下四个数据库都是 MySQL 自带的数据库。
+### 查看默认数据库
+
+以下四个数据库都是 MySQL 自带的数据库。
 
 ```mysql
 mysql> show databases;
@@ -265,34 +267,34 @@ mysql> show databases;
 4 rows in set (0.01 sec)
 ```
 
-- “information_schema”，主要保存 MySQL 数据库服务器的系统信息，比如数据库的名称、数据表的名称、字段名称、存取权限、数据文件所在的文件夹和系统使用的文件夹，等等
-- “performance_schema”，用来监控 MySQL 的各类性能指标。
-- “sys”数据库，主要作用是以一种更容易被理解的方式展示 MySQL 数据库服务器的各类性能指标，帮助系统管理员和开发人员监控 MySQL 的技术性能。
-- “mysql”数据库保存了 MySQL 数据库服务器运行时需要的系统信息，比如数据文件夹、当前使用的字符集、约束检查信息，等等
+- `mysql` 数据库存储了MySQL的用户账户和权限信息，一些存储过程、事件的定义信息，一些运行过程中产生的日志信息，一些帮助信息以及时区信息等。
+- `information_schema` 保存着MySQL服务器**维护的所有其他数据库的信息**，比如有哪些表、哪些视图、哪些触发器、哪些列、哪些索引。这些信息并不是真实的用户数据，而是一些描述性信息，也称之为**元数据**。
+- `performance_schema` 用来监控 MySQL 的各类性能指标。
+- `sys` 数据库，主要是通过**视图**的形式把 information_schema 和 performance_schema 结合起来，帮助系统管理员和开发人员监控 MySQL 的技术性能。
 
 ```mysql
 # 创建自己的数据库
-create database atguigudb;
+CREATE DATABASE atguigudb;
 
 # 使用自己的数据库
-use atguigudb;
+USE atguigudb;
 
 # 查看某个库的所有表格
-show tables; #要求前面有use语句
-show tables from 数据库名; 
+SHOW TABLES; #要求前面有use语句
+SHOW TABLES FROM 数据库名; 
 
 # 创建新的表格 学生表
-create table student(
-	id int,
-	name varchar(20) #说名字最长不超过20个字符
+CREATE TABLE student(
+	id INT,
+	name VARCHAR(20) #说名字最长不超过20个字符
 );
 
 # 添加两条记录到student表中
-insert into student values(1,'张三');
-insert into student values(2,'李四');
+INSERT INTO student VALUES(1,'张三');
+INSERT INTO student VALUES(2,'李四');
 
 # 查看student表的详细创建信息
-mysql > show create table student\G
+mysql > SHOW CREATE TABLE student\G
 *************************** 1. row ***************************
        Table: student
 Create Table: CREATE TABLE `student` (
@@ -302,13 +304,13 @@ Create Table: CREATE TABLE `student` (
 1 row in set (0.00 sec)
 
 # 查看数据库的创建信息
-show create database atguigudb\G
+SHOW CREATE DATABASE atguigudb\G
 
 # 删除表格
-drop table student;
+DROP TABLE student;
 
 # 删除数据库
-drop database atguigudb;
+DROP DATABASE atguigudb;
 
 # 退出MySQL
 exit # 或者 quit

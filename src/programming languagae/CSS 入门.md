@@ -1,6 +1,6 @@
 ---
 title: CSS 入门
-date:
+date: 2025-09-28
 tags:
   - CSS
 category:
@@ -8,149 +8,233 @@ category:
 ---
 # 前言
 
-学习 Harry Roberts 的 CSS 教程： [High-level advice and guidelines for writing sane, manageable, scalable CSS](https://cssguidelin.es/)。这个教程主要在讲如何写好 CSS 代码，至于 CSS 代码具体语法之类的，还需要自行寻找其他教程。
+学习 Harry Roberts 的 [High-level advice and guidelines for writing sane, manageable, scalable CSS](https://cssguidelin.es/) 和尚硅谷的 JavaWeb课程。
+
+在线帮助文档： https://www.w3school.com.cn/
 
 <!-- more -->
 
-# CSS 
+CSS，全称 Cascading Style Sheets，能够对网页中元素位置的排版进行像素级精确控制，支持几乎所有的字体字号样式，拥有对网页对象和模型样式编辑的能力，简单来说，美化页面。
 
-在每个 CSS 项目的主要部分开头都加上标题：
+# CSS 引入方式
 
-```css
-/*------------------------------------*\
-  #FOO
-\*------------------------------------*/
+## 行内式
 
-.foo { }
+行内式，通过元素开始标签的 `style` 属性引入，语法为 `样式名:样式值;` 。
 
-  .foo__bar { }
-
-
-.foo--baz { }
-
-
-
-
-
-/*------------------------------------*\
-  #BAR
-\*------------------------------------*/
-
-.bar { }
-
-  .bar__baz { }
-
-  .bar__foo { }
+```html
+<!--
+display: block;
+	将元素的显示类型设置为“块级元素”
+color: white; 
+	设置元素内`文本颜色`为白色
+border: 3px solid green;
+	一次性设置`边框`的宽度、样式和颜色
+font-family: '隶书',serif;
+	字体设置为隶书，若电脑上未安装隶书，默认用 serif 显示
+line-height: 30px;
+	设置文本行的高度（行间距）。
+border-radius: 5px;
+	设置元素边框的圆角半径。按钮的四个角会变得圆滑
+-->
+<input 
+	type="button" 
+	value="按钮"
+	style="
+		display: block;
+		width: 60px; 
+		height: 40px; 
+		background-color: rgb(140, 235, 100); 
+		color: white;  
+		border: 3px solid green;
+		font-size: 22px;
+		font-family: '隶书',serif;
+		line-height: 30px;
+		border-radius: 5px;
+"/> 
 ```
 
-以 `#` 为前缀，以便我们执行更有针对性的搜索，例如 `grep`  。与其只搜索 SECTION-TITLE （这可能会产生很多结果），不如搜索范围更广的 `#SECTION-TITLE` 。
+行内式的缺点：
 
-注释和代码之间要一行隔开。紧密相关的 section 之间空一行；关联松散的 section 之间空两行；全新主题的 section 之间空五行。
++ html代码和css样式代码交织在一起，增加阅读难度和维护成本
++ css样式代码仅对当前元素有效，代码重复量高，复用度低
+
+## 内嵌式
+
+内嵌式样式需要在 `<head>` 标签中,通过一对 `<style>` 标签定义CSS样式。
+
+```html
+<head>
+    <meta charset="UTF-8">
+    <style>
+        /* 通过选择器确定内嵌式样式的作用范围 */
+        input {
+            display: block;
+            width: 80px; 
+            height: 40px; 
+            background-color: rgb(140, 235, 100); 
+            color: white;
+            border: 3px solid green;
+            font-size: 22px;
+			font-family: '隶书',serif;
+            line-height: 30px;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <input type="button" value="按钮1"/> 
+    <input type="button" value="按钮2"/> 
+    <input type="button" value="按钮3"/> 
+    <input type="button" value="按钮4"/> 
+</body>
+```
+
+内嵌式的缺点：
+
+- 内嵌式虽然对样式代码做了抽取，但是CSS代码仍然在html文件中
+- 内嵌样式仅仅能作用于当前文件，代码复用度还是不够，不利于网站风格统一
+
+## 外部样式表
+
+在项目单独创建css样式文件，专门用于存放CSS样式代码。
 
 ```css
-[selector] {
-  [property]: [value];
-  [<--declaration--->]
+/* buttoms.css */
+input {
+    display: block;
+    width: 80px;
+    height: 40px;
+    background-color: rgb(140, 235, 100);
+    color: white;
+    border: 3px solid green;
+    font-size: 22px;
+    font-family: '隶书',serif;
+    line-height: 30px;
+    border-radius: 5px;
 }
 ```
 
-一些书写 CSS 选择器的规则：
+在 `<head>` 标签中，通过 `<link>` 标签引入外部CSS样式即可。
 
-- 相关的选择器在同一行；不相关的选择器在新行
-- 每个声明独占一行
-- 每个声明缩进两个空格
-- 在最后一个声明后添加一个分号 `;` 
-- 选择器之间有层次关系，也可以缩进次级选择器
-- 尝试在声明中对齐常见的、相关的字符串
-
-## CSS 覆盖
-
-CSS 选择器权重等级（从高到低）：
-
-1. **行内样式** `style="..."`
-2. **ID 选择器** - 例如 `#header`
-3. **类/属性/伪类选择器**
-    - 类选择器 `.class`
-    - 属性选择器 `[type="text"]`
-    - 伪类 `:hover`, `:focus`
-4. **元素/伪元素选择器**
-    - 元素选择器 `div`, `h2`, `p`
-    - 伪元素 `::before`, `::after`
-
-优先级由选择器的类型决定，通常用一个三元组 `(a, b, c)` 来表示：
-
-- **a**: ID 选择器的数量
-- **b**: 类选择器、属性选择器、伪类的数量
-- **c**: 元素选择器、伪元素的数量
-- **通配符选择器(`*`)**、**组合器(`+`, `>`, `~`, )** 和 **否定伪类(`:not()`)** 本身不计入优先级，但 `:not()` 内部的参数会计入
-- `!important` 是最高优先级，覆盖所有其他规则
-
-比较规则：从左到右比较。先比较 a，a 大的优先级高；a 相同则比较 b，b 大的优先级高；以此类推。
-
-更多例子：
-
-| 选择器                   | 权重计算                | 优先级 (a,b,c) |
-| --------------------- | ------------------- | ----------- |
-| `div`                 | 1个元素                | (0,0,1)     |
-| `ul > li`             | 2个元素                | (0,0,2)     |
-| `.container`          | 1个类                 | (0,1,0)     |
-| `#main-nav`           | 1个ID                | (1,0,0)     |
-| `div.header`          | 1个元素 + 1个类          | (0,1,1)     |
-| `input[type="text"]`  | 1个元素 + 1个属性         | (0,1,1)     |
-| `ul#menu li.active a` | 1个ID + 1个类 + 3个元素   | (1,1,3)     |
-| `:not(#main) .item`   | 1个ID (在:not里) + 1个类 | (1,1,0)     |
-
-## Sass
-
-| 特性  | CSS          | Sass/SCSS                   |
-| --- | ------------ | --------------------------- |
-| 类型  | 标准的静态样式表语言   | CSS 预处理器                    |
-| 功能  | 不支持变量、嵌套、混合等 | 支持变量、嵌套、混合、继承、函数等           |
-| 语法  | 标准的CSS 语法    | 有两种：缩进式(.sass) 和大括号式(.scss) |
-| 编译  | 无需编译，直接使用    | 需要编译成CSS 才能在浏览器中使用          |
-
-Sass 提供了嵌套功能。
-
-```scss
-.foo {
-  color: red;
-
-  .bar {
-    color: blue;
-  }
-
-}
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+	<!--
+	CSS样式代码从html文件中剥离,利于代码的维护
+	CSS样式文件可以被多个不同的html引入,利于网站风格统一
+	-->
+    <link href="css/buttons.css" rel="stylesheet" type="text/css"/>
+</head>
+<body>
+	<input type="button" value="按钮1"/>
+	<input type="button" value="按钮2"/>
+	<input type="button" value="按钮3"/>
+	<input type="button" value="按钮4"/>
+</body>
+</html>
 ```
 
-上述 Sass 代码编译后得到 CSS 代码：
+# CSS 选择器
 
-```css
-.foo { color: red; }
-.foo .bar { color: blue; }
+## 元素选择器
+
+根据**标签名**确定样式的作用范围，语法为 `元素名 { }` 。
+
+```html
+<head>
+    <meta charset="UTF-8">
+    <style>
+		/* 元素选择器 */
+        input {
+            display: block;
+            background-color: rgb(140, 235, 100); 
+        }
+    </style>
+</head>
+<body>
+    <input type="button" value="按钮1"/> 
+    <input type="button" value="按钮2"/> 
+	<button>按钮3</button>
+</body>
 ```
 
-Sass 注释有两种，一种是标准多行注释 (`/* ... */`)，另一种是单行注释 (`//`)。标准多行注释会保留在编译后的 CSS 文件中，单行注释会被完全移除。这一点需要注意，以免编译完发现注释都没了。
+元素选择器的缺点：
 
-在生产环境中，上述两种注释都该被移除。~~所以反编译后没有一丁点注释的原因，不是程序员偷懒。~~
+- 样式只能作用到同名标签上，其他标签不可用
+- 相同的标签未必需要相同的样式，会造成样式的作用范围太大
 
-```scss
-// Dimensions of the @2x image sprite:
-$sprite-width:  920px;
-$sprite-height: 212px;
+## id 选择器
 
-/**
- * 1. Default icon size is 16px.
- * 2. Squash down the retina sprite to display at the correct size.
- */
-.sprite {
-  width:  16px; /* [1] */
-  height: 16px; /* [1] */
-  background-image: url(/img/sprites/main.png);
-  background-size: ($sprite-width / 2 ) ($sprite-height / 2); /* [2] */
-}
+根据**元素id属性**的值确定样式的作用范围，语法为  `#id值 {}` 。
+
+```html
+<head>
+    <meta charset="UTF-8">
+    <style>
+		/* id 选择器 */
+        #btn1 {
+            display: block;
+            background-color: rgb(140, 235, 100);
+        }
+    </style>
+</head>
+<body>
+    <input id="btn1" type="button" value="按钮1"/>
+    <input id="btn2" type="button" value="按钮2"/>
+    <button id="btn3">按钮3</button>
+</body>
 ```
 
-## 命名约定
+id 选择器的缺点：
+
+- id属性的值在页面上具有唯一性，所有id选择器也只能影响一个元素的样式
+- 因为id属性值不够灵活，所以使用该选择器的情况较少
+
+## class 选择器
+
+根据**元素class属性**的值确定样式的作用范围，语法为 `.class值 {}` 。
+
+- class属性值可以有一个，也可以有多个，多个不同的标签也可以是使用相同的class值
+- 多个选择器的样式可以在同一个元素上进行叠加
+- 因为class选择器非常灵活，所以在CSS中，使用该选择器的情况较多
+
+```html
+<head>
+    <meta charset="UTF-8">
+    <style>
+        .shapeClass {
+            display: block;
+            width: 80px;
+            height: 40px;
+            border-radius: 5px;
+        }
+        .colorClass{
+            background-color: rgb(140, 235, 100);
+            color: white;
+            border: 3px solid green;
+        }
+        .fontClass {
+            font-size: 22px;
+            font-family: '隶书',serif;
+            line-height: 30px;
+        }
+    </style>
+</head>
+<body>
+    <input  class ="shapeClass colorClass fontClass" type="button" value="按钮1"/>
+    <input  class ="shapeClass colorClass" type="button" value="按钮2"/>
+    <input  class ="colorClass fontClass" type="button" value="按钮3"/>
+    <input  class ="fontClass" type="button" value="按钮4"/>
+    <button class="shapeClass colorClass fontClass" >按钮5</button>
+</body>
+```
+
+![展示效果|200x0](https://vip.123pan.cn/1844935313/obsidian/20260418160847384.png)
+
+## 选择器命名约定
 
 CSS 选择器的命名，应该遵循类 BEM 命名风格。BEM，即 Block（块）、Element（元素）Modifier（修饰符）。元素是块的组成部分，而修饰符是块的变体或扩展。
 
@@ -234,11 +318,25 @@ HTML 标签中模糊的类名，可以通过使用 `data-ui-component` 属性来
 
 `data-ui-component` 属性可以是上面这种首字母大写，也可以是仿照类名风格的 `main-nav` 。
 
+## 选择器权重
+
+CSS 选择器权重等级（从高到低）：
+
+1. 行内样式 `style="..."`
+2. id 选择器 例如 `#header`
+3. class/属性/伪类选择器
+    - class 选择器 `.class`
+    - 属性选择器 `[type="text"]`
+    - 伪类 `:hover`, `:focus`
+4. 元素/伪元素选择器
+    - 元素选择器 `div`, `h2`, `p`
+    - 伪元素 `::before`, `::after`
+
 ## 选择器性能
 
-性能指标是，浏览器匹配你用 CSS 写下的选择器与在 DOM 中找到的节点的速度。
+选择器的性能指标是，浏览器匹配你用 CSS 写下的选择器与在 DOM 中找到的节点的速度。
 
-总的来说，选择器越长（即组成部分越多），速度就越慢，例如：`body.home div.header ul { }` 工作效率不如 `.primary-nav { }` 。
+总的来说，选择器越长（即组成部分越多），速度就越慢，例如：`body.home div.header ul { }` 工作效率就不如 `.primary-nav { }` 。
 
 浏览器匹配过程是**从右到左**。第一种情况下，浏览器要查找 DOM 中的所有 `ul` 元素，然后匹配 是否有位于某个 `header` 内的 ul 元素，接着检查 `div`、`home`、`body` ，最后筛选出符合条件的 `ui` 元素。第二种情况就比较简单，查找所有类名为 `.primary-nav` 的元素。
 
@@ -250,7 +348,190 @@ HTML 标签中模糊的类名，可以通过使用 `data-ui-component` 属性来
 
 话虽如此，CSS 选择器的性能应该排在你需要优化的事项列表的较低位置；浏览器速度很快，而且只会越来越快，只有在显著的边缘情况下，低效的选择器才有可能构成问题。
 
-## 设计模式
+# CSS 定位
+
+position 属性指定了元素的定位类型。
+
+| 值          | 描述                                                                                    |
+| ---------- | ------------------------------------------------------------------------------------- |
+| `static`   | 默认值。没有定位，元素出现在正常的流中（忽略 top, bottom, left, right 或者 z-index 声明）。                       |
+| `absolute` | 生成绝对定位的元素，相对于 static 定位以外的第一个父元素进行定位。  <br>元素的位置通过 left, top, right 以及 bottom 属性进行规定。 |
+| `fixed`    | 生成绝对定位的元素，相对于浏览器窗口进行定位。  <br>元素的位置通过 left, top, right 以及 bottom 属性进行规定。               |
+| `relative` | 生成相对定位的元素，相对于其正常位置进行定位。  <br>因此，"left:20" 会向元素的 LEFT 位置添加 20 像素。                      |
+
+## 静态定位
+
+不设置的时候的默认值就是static，静态定位，没有定位，元素出现在该出现的位置，**块级元素垂直排列，行内元素水平排列**。
+
+```html
+<head>
+    <meta charset="UTF-8">
+    <style>
+        .innerDiv{
+            width: 100px;
+            height: 100px;
+        }
+        .d1{
+            background-color: rgb(166, 247, 46);
+            position: static;
+        }
+        .d2{
+            background-color: rgb(79, 230, 124);
+        }
+        .d3{
+            background-color: rgb(26, 165, 208);
+        }
+    </style>
+</head>
+<body>
+    <div class="innerDiv d1">框1</div>
+    <div class="innerDiv d2">框2</div>
+    <div class="innerDiv d3">框3</div>
+</body>
+```
+
+## 绝对定位 
+
+absolute，通过 top left right bottom 指定元素在页面上的固定位置。**定位后元素会让出原来位置，其他元素可以占用**。
+
+```html
+<head>
+    <meta charset="UTF-8">
+    <style>
+        .innerDiv{
+            width: 100px;
+            height: 100px;
+        }
+        .d1{
+            background-color: rgb(166, 247, 46);
+            position: absolute;
+            left: 300px;
+            top: 100px;
+        }
+        .d2{
+            background-color: rgb(79, 230, 124);
+        }
+        .d3{
+            background-color: rgb(26, 165, 208);
+        }
+    </style>
+</head>
+<body>
+    <div class="innerDiv d1">框1</div>
+    <div class="innerDiv d2">框2</div>
+    <div class="innerDiv d3">框3</div>
+</body>
+```
+
+## 固定定位
+
+fixed 在浏览器窗口固定位置，不会随着页面的上下移动而移动，元素定位后会让出原来的位置，其他元素可以占用。
+
+应用场景：
+
+- 固定导航栏
+- 返回顶部按钮
+- 悬浮客服窗口
+- 模态框（Modal）
+
+![框1是固定定位|400x0](https://vip.123pan.cn/1844935313/obsidian/fixeddingwei.gif)
+
+## 相对定位
+
+relative 相对于自己原来的位置进行地位，定位后保留原来的站位，其他元素不会移动到该位置。
+
+```html
+<head>
+    <meta charset="UTF-8">
+    <style>
+        .innerDiv{
+            width: 100px;
+            height: 100px;
+        }
+        .d1{
+            background-color: rgb(166, 247, 46);
+            position: relative;
+            left: 30px;
+            top: 30px;
+        }
+        .d2{
+            background-color: rgb(79, 230, 124);
+        }
+        .d3{
+            background-color: rgb(26, 165, 208);
+        }
+    </style>
+</head>
+<body>
+    <div class="innerDiv d1">框1</div>
+    <div class="innerDiv d2">框2</div>
+    <div class="innerDiv d3">框3</div>
+</body>
+
+```
+
+# CSS 盒子模型
+
+CSS 盒子模型本质上是一个盒子，封装周围的HTML元素，它包括：
+
+- Margin(外边距) 清除边框外的区域，外边距是透明的。
+- Border(边框) 围绕在内边距和内容外的边框。
+- Padding(内边距) 清除内容周围的区域，内边距是透明的。
+- Content(内容) 盒子的内容，显示文本和图像。
+
+![CSS盒子模型|500x0](https://vip.123pan.cn/1844935313/obsidian/20260418182034590.png)
+
+# Sass
+
+| 特性  | CSS          | Sass/SCSS                   |
+| --- | ------------ | --------------------------- |
+| 类型  | 标准的静态样式表语言   | CSS 预处理器                    |
+| 功能  | 不支持变量、嵌套、混合等 | 支持变量、嵌套、混合、继承、函数等           |
+| 语法  | 标准的CSS 语法    | 有两种：缩进式(.sass) 和大括号式(.scss) |
+| 编译  | 无需编译，直接使用    | 需要编译成CSS 才能在浏览器中使用          |
+
+Sass 提供了嵌套功能。
+
+```scss
+.foo {
+  color: red;
+
+  .bar {
+    color: blue;
+  }
+
+}
+```
+
+上述 Sass 代码编译后得到 CSS 代码：
+
+```css
+.foo { color: red; }
+.foo .bar { color: blue; }
+```
+
+Sass 注释有两种，一种是标准多行注释 (`/* ... */`)，另一种是单行注释 (`//`)。标准多行注释会保留在编译后的 CSS 文件中，单行注释会被完全移除。这一点需要注意，以免编译完发现注释都没了。
+
+在生产环境中，上述两种注释都该被移除。~~所以反编译后没有一丁点注释的原因，不是程序员偷懒。~~
+
+```scss
+// Dimensions of the @2x image sprite:
+$sprite-width:  920px;
+$sprite-height: 212px;
+
+/**
+ * 1. Default icon size is 16px.
+ * 2. Squash down the retina sprite to display at the correct size.
+ */
+.sprite {
+  width:  16px; /* [1] */
+  height: 16px; /* [1] */
+  background-image: url(/img/sprites/main.png);
+  background-size: ($sprite-width / 2 ) ($sprite-height / 2); /* [2] */
+}
+```
+
+# 设计模式
 
 - 无论何时构建 UI 组件，都尝试将其拆分成两部分：一部分用于结构化样式（内边距、布局等），另一部分用于外观（颜色、字体等）
 - 单一职责原则，指出每个上下文（类、函数、变量等）都应只有一个职责，并且该职责应完全封装在该上下文中
@@ -295,12 +576,44 @@ DRY 原则例子：
 }
 ```
 
-# 尾声
+在每个 CSS 项目的主要部分开头都加上标题：
 
-这个教程没怎么讲具体写 CSS 代码，我觉得也没必要，之后看别人的 Obsidian CSS 片段或者继续学习前端方面知识，肯定还会遇到具体的 CSS 代码，到时候再填充进文章里就行了。
+```css
+/*------------------------------------*\
+  #FOO
+\*------------------------------------*/
 
-不过倒是解答心中的一点疑惑：短的 CSS 代码还好，长一点又分成多个文件的 CSS 就大概看不明白了。原来是注释太少了。
+.foo { }
 
-之前学习 Obsidian 使用时，也想过用别人的 CSS 代码对 ob 进行美化，但感觉容易起冲突，于是就因噎废食，选了一套现成的主题就一直用着。
+  .foo__bar { }
 
-感觉我博客下面的xx 入门都是我看一遍，然后摘抄一部分出来供自己回顾。没办法水平有限，知识不足，只能先攒点家底出来，没法像大佬那样肆意挥霍。
+
+.foo--baz { }
+/*------------------------------------*\
+  #BAR
+\*------------------------------------*/
+
+.bar { }
+
+  .bar__baz { }
+
+  .bar__foo { }
+```
+
+以 `#` 为前缀，以便我们执行更有针对性的搜索，例如 `grep`  。与其只搜索 SECTION-TITLE （这可能会产生很多结果），不如搜索范围更广的 `#SECTION-TITLE` 。
+
+```css
+[selector] {
+  [property]: [value];
+  [<--declaration--->]
+}
+```
+
+书写 CSS 选择器的规则：
+
+- 相关的选择器在同一行；不相关的选择器在新行
+- 每个声明独占一行
+- 每个声明缩进两个空格
+- 在最后一个声明后添加一个分号 `;` 
+- 选择器之间有层次关系，也可以缩进次级选择器
+- 尝试在声明中对齐常见的、相关的字符串

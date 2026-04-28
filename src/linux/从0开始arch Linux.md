@@ -370,7 +370,10 @@ sudo systemctl restart keyd
 - [x] Google Chrome
 
 ```zsh
-yay -S google-chrome
+yay -S google-chrome 
+
+# 我用于爬虫
+yay -S chromedriver
 ```
 
 在浏览器中尝试播放视频，结果没声音：
@@ -590,7 +593,7 @@ sudo pacman -S thunderbird
 ```
 
 - gmail 邮箱，使用当前邮箱的账号、密码进行认证。
-- outlook 邮箱，需要一个绑定outlook的其他邮箱，使用绑定邮箱和邮箱验证码进行认证。
+- outlook 邮箱，需要一个绑定outlook的其他邮箱，使用绑定邮箱和邮箱验证码进行认证。[参考](https://support.microsoft.com/zh-cn/office/outlook-com-%E7%9A%84-pop-imap-%E5%92%8C-smtp-%E8%AE%BE%E7%BD%AE-d088b986-291d-42b8-9564-9c414e2aa040)。
 - qq邮箱，需要qq邮箱+授权码（不是邮箱密码）认证。授权码申请：进入邮箱网页，右上角有一个“账号与安全”，里面的安全设置里，有“POP3/IMAP/SMTP/Exchange/CardDAV 服务”，该服务提供授权码。
 
 Thunderbird 有插件市场，我只用过 BulkDelete，曾经有段时间不常看邮箱，因此每次打开邮箱都有一堆消息，BulkDelete可以帮助我批量删除邮件。
@@ -793,8 +796,11 @@ git clone https://github.com/jeffreytse/zsh-vi-mode $ZSH_CUSTOM/plugins/zsh-vi-m
 plugins=(git zsh-autosuggestions zsh-syntax-highlighting z extract web-search zsh-vi-mode)
 ```
 
+> 使用 `sudo su` 在 root 用户终端下重新配置以上内容。
+
 ```zsh
-7z a -tzip -p[你的密码] 压缩包名称.zip 要压缩的文件或目录路径
+ZSH_THEME="ys" # 换一套主题，方便区分两种用户身份的终端
+plugins=(git zsh-autosuggestions zsh-syntax-highlighting z extract web-search)
 ```
 
 ### Java
@@ -835,6 +841,32 @@ source ~/.zshrc
 
 # 测试安装是否成功
 conda list
+
+# 删除虚拟环境
+conda env remove -n [虚拟环境名]
+
+# 导出当前激活的环境
+conda env export > environment.yaml
+# 导出指定环境
+conda env export -n myenv > environment.yaml
+
+# 创建新环境
+conda env create -f environment.yaml
+# 指定环境名称（覆盖YAML中的名称）
+conda env create -n newenv -f environment.yaml
+```
+
+[卸载 miniconda](https://www.anaconda.com/docs/getting-started/miniconda/uninstall)：
+
+```zsh
+# 确定 miniconda 的安装位置
+conda info --base
+
+# 确保停用 miniconda 的base环境
+conda deactivate
+
+# 安装目录下有卸载脚本 uninstall.sh
+~/miniconda3/uninstall.sh --remove-caches --remove-config-files user --remove-user-data
 ```
 
 - [x] Python 包管理器 uv
@@ -889,6 +921,13 @@ julia
 
 ```zsh
 yay -S windterm-bin
+```
+
+### tmux
+
+
+```zsh
+sudo pacman -S tmux
 ```
 
 ### 远程登录自家电脑
@@ -1017,6 +1056,8 @@ yay -S cherry-studio-bin
 yay -S typora-free-cn
 ```
 
+Typora 主题的存放位置在 `~/.config/Typora/themes/` 。
+
 - [x] xmind
 
 ```zsh
@@ -1073,6 +1114,14 @@ sudo pacman -S mpv
 sudo pacman -S obs-studio
 ```
 
+- [x] 录制Gif动图 kooha
+
+[项目地址](https://github.com/seadve/kooha)
+
+```zsh
+sudo pacman -S kooha
+```
+
 - 转换工具 ffmpeg
 
 ## 游戏
@@ -1099,6 +1148,18 @@ sudo pacman -S steam
 ProtonUp-QT 是专门用来切换Steam游戏所使用的Proton版本。ProtonTricks 则是用于给Steam游戏安装额外的Windows exe套件。
 
 Steam启动的游戏的界面窗口太小：[Gamescope缩放游戏解析度+ Linux开机直接进入Steam Big Picture Mode](https://ivonblog.com/posts/steam-gamescope/)
+
+```zsh
+sudo pacman -S gamescope
+```
+
+在Steam游戏收藏库，对游戏点选右键 → 內容，编辑启动选项。
+
+指令基本格式如下，`%command%`是固定值，不要变更。
+
+```txt
+gamescope -W 2560 -H 1600 -r 60 -- %command%
+```
 
 - [x] wine
 
@@ -1354,6 +1415,8 @@ RUN+="/usr/bin/modprobe -r hid_magicmouse", \
 RUN+="/usr/bin/modprobe hid_magicmouse"
 ```
 
+> 在 KDE Plasma Wayland 会话中，大多数能缩放图片的应用（如浏览器、文件管理器、图片查看器）都支持**Ctrl + 两指滚动**来缩放。
+
 ## 外接显卡
 
 oculink 外接显卡重启电脑后，`neofetch` 识别出了4070显卡，但是 `nvidia-smi` 显示：
@@ -1365,8 +1428,25 @@ NVIDIA-SMI has failed because it couldn't communicate with the NVIDIA driver. Ma
 ```zsh
 ❯ lspci | grep -i nvidia
 02:00.0 VGA compatible controller: NVIDIA Corporation AD104 [GeForce RTX 4070] (rev a1)
-02:00.1 Audio device: NVIDIA Corporation AD104 High Definition Audio Controller (rev a1)
+02:00.1 Audio device: NVIDIA Corporation AD104 High Definition Audio Controller (rev a1)k
 ```
+
+执行下面命令后，如果没有显示 `Kernel driver in use` 行，那么就从三个备选内核模块 nouveau, nvidia_drm, nvidia 中启用 `nvidia`。
+
+```zsh
+❯ lspci -k | grep -A 2 -i "NVIDIA"
+02:00.0 VGA compatible controller: NVIDIA Corporation AD104 [GeForce RTX 4070] (rev a1)
+	Subsystem: NVIDIA Corporation Device 1875
+	Kernel driver in use: nvidia
+	Kernel modules: nouveau, nvidia_drm, nvidia
+...
+```
+
+Kernel modules 详解：
+
+- **`nvidia`**: NVIDIA 官方的闭源核心驱动。它负责管理显卡的实际算力、渲染和大部分功能。
+- **`nvidia_drm`**: 它是“直接渲染管理器”（Direct Rendering Manager）。作用是让 Linux 内核（尤其是显示管理器，如 X11 或 Wayland）能够正确识别并管理显卡的显示输出。
+- **`nouveau`**:  Linux 社区开发的开源驱动。
 
 ### 安装nvidia驱动
 
@@ -1377,7 +1457,7 @@ sudo pacman -Syu
 # nvidia-open 是内核模块
 # nvidia-utils 提供了驱动正常工作所需的一系列核心组件
 # lib32-nvidia-utils 解决游戏兼容性
-sudo pacman -S nvidia-open nvidia-utils lib32-nvidia-utils linux-headers --needed
+sudo pacman -S nvidia-dkms nvidia-utils lib32-nvidia-utils linux-headers --needed
 ```
 
 开启 DRM 模式设置：Wayland 必须在内核启动早期就认出 NVIDIA 驱动，否则会出现“黑屏”或“无法进入桌面”。
@@ -1785,6 +1865,18 @@ sudo pacman -S btop
 ## Claude Code
 
 ![[AI IDE#Claude Code CLI]]
+
+## codex
+
+```zsh
+yay -S openai-codex-bin
+```
+
+登录账号：
+
+```zsh
+codex auth login
+```
 
 ## 云文件列表程序 OpenList
 
