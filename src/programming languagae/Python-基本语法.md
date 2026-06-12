@@ -12,9 +12,22 @@ category:
 
 结合了部分Python 官方的 [Python3 tutorial 中文版](https://docs.python.org/zh-cn/3.14/tutorial/index.html) 。
 
+[Learning Python, 6th Edition 官网](https://learning-python.com/about-lp6e)
+
 <!-- more -->
 
 [内置函数索引](https://docs.python.org/zh-cn/3.13/library/functions.html)、[模块索引](https://docs.python.org/zh-cn/3.13/py-modindex.html)
+
+# 调试
+
+```python
+# 使用 pdb 调式
+python3 -m pdb file.py
+
+# 使用 -i，当脚本退出时（无论成功结束还是遇到错误），Python都会自动打开交互模式（>>>)
+# 这时候也可以导入 pdb 模块
+python3 –i script.py
+```
 
 # 第0章 使用 Python 解释器
 

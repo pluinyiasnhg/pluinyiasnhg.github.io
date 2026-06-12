@@ -96,6 +96,32 @@ pacstrap -K /mnt base linux base-devel linux-firmware alsa-utils pipewire p
 > `vim` 包：这是 Arch 默认的轻量版。为了保持极简，它在编译时**禁用了**很多高级功能。
 > `gvim` 包：这是“全功能版”。虽然名字叫 GUI Vim，但安装它会同时提供一个**终端版的 `vim` 命令**。
 
+如果是取下U盘后，使用 `cfdisk` 进行磁盘分区，需要安装 `util-linux` ：
+
+```zsh
+sudo pacman -S util-linux
+```
+
+然后就和上面的操作差不多了：
+
+```zsh
+# 格式化分区
+sudo mkfs.ext4 /dev/nvme0n1p5
+
+# 挂载并设置开机自动挂载
+sudo mkdir -p /mnt/steam
+sudo mount /dev/nvme0n1p5 /mnt/steam
+
+# 修改权限，让普通用户可以读写该目录
+sudo chown -R your_user:your_user /mnt/steam
+
+# 获取该分区的 UUID
+sudo blkid /dev/nvme0n1p5
+
+# 复制输出的 UUID="..." 值，打开 /etc/fstab 文件配置开机自动挂载分区
+UUID=YOUR-UUID-HERE /mnt/steam ext4 defaults 0 2
+```
+
 ## 配置系统
 
 更新系统时间：systemd-timesyncd服务，默认会同步时间，使用 `timedatectl` 查看时间是否同步。
@@ -151,7 +177,24 @@ pacman -S grub efibootmgr os-prober
 vim /etc/default/grub #GRUB_DISABLE_OS_PROBER=false
 grub-install --target=x86_64-efi --efi-directory=/boot --bootloader-id=Arch
 grub-mkconfig -o /boot/grub/grub.cfg
+```
 
+```zsh
+❯ cd /boot
+❯ ll
+total 139M
+-rwxr-xr-x 1 root root 8.0M Jan 19 17:44  BackupSbb.bin
+drwxr-xr-x 3 root root 4.0K Jan 19 17:33  EFI
+drwxr-xr-x 6 root root 4.0K May 20 21:13  grub
+-rwxr-xr-x 1 root root 101M May 20 17:14  initramfs-linux.img
+-rwxr-xr-x 1 root root  15M May 13 01:27  intel-ucode.img
+drwxr-xr-x 2 root root 4.0K Jan 20 02:03 'System Volume Information'
+-rwxr-xr-x 1 root root  17M May 19 09:43  vmlinuz-linux
+```
+
+
+
+```zsh
 # 安装 Intel 核显驱动 mesa vulkan-intel xf86-video-intel
 # xorg
 # KDE：plasma-meta kde-system-meta
@@ -228,6 +271,10 @@ pacman -S dialog wireless_tools wpa_supplicant mtools dosfstools linux-he
 	- Linux 内核头文件
 	- 编译内核模块或某些驱动必需
 	- 安装 VirtualBox、NVIDIA DKMS 驱动等需要
+
+## 其他桌面环境可能
+
+- [niri](https://github.com/niri-wm/niri)+[DMS](https://github.com/AvengeMedia/DankMaterialShell)
 
 # 取下U盘后
 
@@ -494,6 +541,7 @@ patch:
     - schema: double_pinyin_flypy  # 小鹤双拼
     - schema: luna_pinyin          # 保留全拼
 	- schema: cangjie5             # 仓颉五代
+	- schema: wubi86               # 五笔86
 
   "ascii_composer/switch_key":
     Shift_L: commit_code # 中文状态下，shift上屏字符并切换英文状态  
@@ -507,13 +555,15 @@ patch:
 ```yaml
   # 设置符号
   "punctuator/half_shape":
-    "[": ["[", "【", "〔", "［" ]
-    "]": [ "]", "】", "〕", "］" ]
+    '[' : [ "「", "【", "〔", "［ "]
+    ']' : [ "」", "】", "〕", "］" ]
 ```
 
 `symbols.custom.yaml` [gist](https://gist.githubusercontent.com/WithdewHua/ce9b1dc076b191feb6e6a9ec669f71cd/raw/322a1c7bc196606301b49c0688d31fbeea9f5da1/symbols.custom.yaml)
 
-`opencc文件夹` [github](https://github.com/WithdewHua/rime-configuration/tree/main/Rime/Common/opencc)
+`opencc（Open Chinese Convert）文件夹` [github](https://github.com/WithdewHua/rime-configuration/tree/main/Rime/Common/opencc) 用于中文简繁转换
+
+`rime-wubi` [github](https://github.com/rime/rime-wubi) 需要用到其中四个yaml文件，如果需要反查功能，需要将默认的 pinyin_simp 改为本地已有的拼音输入法，比如 luna_pinyin。
 
 ## 通讯相关
 
@@ -522,7 +572,8 @@ patch:
 - [x] Wemeet
 
 ```zsh
-yay -S wechat-appimage linuxqq wemeet-bin
+yay -S wechat-appimage linuxqq 
+paru -S wemeet-bin
 ```
 
 微信频繁出现“运行一段时间就会崩溃”的问题（还是会崩溃）：
@@ -635,7 +686,7 @@ yay -S cursor-bin
 - [x] IntelliJ IDEA 
 
 ```zsh
-yay -S intellij-idea-ultimate-edition
+paru -S intellij-idea-ultimate-edition
 ```
 
 [激活许可证教程](https://blog.idejihuo.com/jetbrains/pycharm-2025-3-3-permanent-activation-tutorial-free-cracking-tool.html)（已失效，不过网站上有新教程，可以试试）：
@@ -704,7 +755,28 @@ public void test$var1$() {
 - [x] PyCharm
 
 ```zsh
-yay -S pycharm
+paru -S pycharm
+```
+
+> [!info] 从配置文件（例如 `.env` 文件）中读取环境变量
+> 1. 在项目根目录下新建一个名为 `.env` 的文件
+> 2. 安装 python-dotenv
+> 3. 在项目入口（如 main.py）加载环境变量
+> 4. 避免将 `.env` 提交到 Git。在 `.gitignore` 中添加 `*.env`，保护敏感信息。
+
+```txt
+API_KEY=your_api_key_here
+BASE_URL=https://api.example.com
+```
+
+```python
+from dotenv import load_dotenv
+import os
+
+load_dotenv()  # 加载 .env 文件中的变量到环境变量中
+
+API_KEY = os.environ.get("API_KEY")
+BASE_URL = os.environ.get("BASE_URL")
 ```
 
 > 快捷键：
@@ -803,6 +875,16 @@ ZSH_THEME="ys" # 换一套主题，方便区分两种用户身份的终端
 plugins=(git zsh-autosuggestions zsh-syntax-highlighting z extract web-search)
 ```
 
+临时取消代理（只影响当前终端会话）：
+
+```zsh
+unset http_proxy https_proxy all_proxy HTTP_PROXY HTTPS_PROXY ALL_PROXY
+```
+
+执行后，当前 shell 中的代理设置被清除，后续的命令（如 Python 脚本）就不会再使用这些代理。
+
+> 或者在代理工具中开启 Tun 模式，终端中不需要设置代理，也能ping通谷歌和百度网址。
+
 ### Java
 
 - [x] Java 的 JDK
@@ -821,6 +903,13 @@ archlinux-java status
 
 # 使用 `set` 参数将默认版本指向 JDK 21
 sudo archlinux-java set java-21-openjdk
+```
+
+- [x] Java项目管理工具 [Maven](https://maven.apache.org/)
+
+```zsh
+sudo pacman -S maven
+mvn -v
 ```
 
 ### Python
@@ -913,6 +1002,37 @@ julia
 
 ![[Git 入门(1)#2. Git 设置]]
 
+### gist
+
+```zsh
+sudo pacman -S gist
+```
+
+```zsh
+# 上传文件
+gist a.rb
+gist a b c
+gist *.rb
+
+# 使用 -p 可将 gist 设置为私有
+gist -p a.rb
+
+# 使用 -d 添加描述
+gist -d "Random rbx bug" a.rb
+
+# 使用 -u 更新现有的 gist
+gist -u GIST_ID test.txt
+
+# 删除指定的 Gist
+gist -d GIST_ID
+
+# 列出用户的 gist（公开 gist 或已认证用户的所有 gist）
+gist -l : all gists for authed user
+
+# 设备登录
+gist --login
+```
+
 ### WindTerm 
 
 - [x] [WindTerm](https://github.com/kingToolbox/WindTerm) 远程登录服务器
@@ -924,7 +1044,6 @@ yay -S windterm-bin
 ```
 
 ### tmux
-
 
 ```zsh
 sudo pacman -S tmux
@@ -1088,10 +1207,17 @@ yay -S piclist-bin
 
 参照之前写的文档[[PicList 3.0.4 更新]]配置了下 WebDav，注意 PicList 开启监听剪贴板。
 
-- [x] 图片转文字 Umi-OCR
+
+划词翻译软件 [Pot](https://github.com/pot-app/pot-desktop) 
+Pot文本识别插件 [pot-app-recognize-plugin-doc2x](https://github.com/Menghuan1918/pot-app-recognize-plugin-doc2x)
 
 ```zsh
-yay -S umi-ocr-bin
+yay -S pot-translation-bin
+# 系统 OCR (离线)
+sudo pacman -S tesseract
+# 本地 Tesseract OCR 引擎必要的语言训练数据包
+sudo pacman -S tesseract-data-eng tesseract-data-chi_sim
+
 ```
 
 - 剪贴板 CopyQ
@@ -1114,6 +1240,8 @@ sudo pacman -S mpv
 sudo pacman -S obs-studio
 ```
 
+简单上手：在“源”窗口添加“屏幕采集(PipeWire)”，用来捕获指定的应用界面；在“源”窗口继续添加“视频采集设备”，启动摄像头捕获人脸。之后，就可以用“开始录制、结束录制”进行录屏。
+
 - [x] 录制Gif动图 kooha
 
 [项目地址](https://github.com/seadve/kooha)
@@ -1123,6 +1251,32 @@ sudo pacman -S kooha
 ```
 
 - 转换工具 ffmpeg
+
+```zsh
+# 极简压缩（保留较好画质）
+# CRF 参数： 数值范围 0-51。18-28 是黄金区间。数字越大，压缩率越高，文件越小 
+ffmpeg -i 输入视频.mp4 -vcodec libx264 -crf 23 输出视频.mp4
+
+# 更高级的压缩（使用 H.265
+# H.265 的压缩效率比 H.264 高出约 50%
+ffmpeg -i 输入视频.mp4 -vcodec libx265 -crf 28 输出视频.mp4
+```
+
+- [x] 视频编辑器 kdenlive
+
+```zsh
+sudo pacman -S kdenlive
+```
+
+## 音乐相关
+
+- [x] 「酷狗音乐概念版」的第三方桌面客户端 [MoeKoe Music](https://github.com/MoeKoeMusic/MoeKoeMusic)
+
+```zsh
+paru -S moekoemusic-bin
+```
+
+- 乐谱软件 MuseScore（没用过）
 
 ## 游戏
 
@@ -1180,6 +1334,10 @@ sudo mv winetricks /usr/bin
 ```
 
 [wine 的前端管理程序 Bottles](https://ivonblog.com/posts/setup-linux-bottles/)，每个bottle相当于一个wine容器。
+
+```zsh
+paru bottles
+```
 
 - [x] Moonlight + Sunshine for Linux：云端串流游戏软体，可让你从另一部电脑串流玩游戏。
 
@@ -1281,11 +1439,38 @@ yay -S deepin-wine-quarkclouddrive
 
 ## 容器与虚拟化
 
-- [x] Docker
+- [x] Docker + Docker Desktop
 
 ```zsh
 sudo pacman -S docker
+paru -S docker-desktop
+
+# 容器中使用宿主机的 nvidia显卡
+sudo pacman -S nvidia-container-toolkit
 ```
+
+设置 Docker Desktop 代理：进入「Settings - Resources - Proxies - Docker Desktop proxy」，选择 Manual configuration。接下来填写三个地址:
+
+```txt
+# Web Server (HTTP)
+http://127.0.0.1:10808
+
+# Secure Web Server (HTTPS)
+http://127.0.0.1:10808
+
+# Bypass proxy settings for these hosts & domains
+localhost, 127.0.0.1
+```
+
+> 此时，Docker Desktop  的搜索框应该就能用了。
+
+Docker Desktop 登录后总是注销，影响我在命令行使用 Docker 下载镜像。遂将登录授权从 Desktop 转移到 secretservice 。
+
+```zsh
+paru -S docker-credential-secretservice-bin
+```
+
+接着，打开 `~/.docker/config.json` ，将 `"credsStore": "desktop"` 修改为 `"credsStore": "secretservice"`。然后在终端重新执行登录 `docker login` 。
 
 - [x] QEMU/KVM + VirtManger 
 
@@ -1369,6 +1554,79 @@ sudo qemu-nbd --disconnect /dev/nbd0
 
 ## 实用工具
 
+### 记忆卡片 Anki
+
+```zsh
+sudo pacman -S anki
+```
+
+打开 Anki，在「工具 > 插件」中安装插件。插件安装方式是，输入插件代码。
+
+[AnkiConnect](https://ankiweb.net/shared/info/2055492159)，插件代码为2055492159。插件安装后还需要进行设置，参考 Obsidian 插件 [Obsidian_to_Anki](https://github.com/obsidiantoanki/Obsidian_to_Anki#obsidian-plugin-users) 中的说明，增加一行 `"app://obsidian.md"` 。
+
+```txt
+{
+    "apiKey": null,
+    "apiLogPath": null,
+    "ignoreOriginList": [],
+    "webBindAddress": "127.0.0.1",
+    "webBindPort": 8765,
+    "webCorsOriginList": [
+        "http://localhost",
+        "app://obsidian.md"
+    ]
+}
+```
+
+接下来需要设置卡片的样式。「添加」卡片，默认模板是 Basic。
+
+- 点击「字段...」，添加两个新字段：Obsidian Link、Obsidian Context。
+- 点击「卡片...」，选择「背面内容模板」，在下方模板样式末尾添加如下内容。它们用于从 Anki 卡片跳转到 Obsidian 笔记对应内容。
+
+```txt
+<br><br><br>
+
+<div style='font-size: 12px;'>{{Obsidian Link}} {{Obsidian Context}}</div>
+```
+
+> Cloze 模板的配置是和 Basic 类似，Cloze 模板用于填空题。
+
+至此，Anki 卡片部分配置完成。接下来是 Obsidian 插件 Obsidian_to_Anki 的配置。打开该插件的设置，需要配置 Note Type Table 和 Folder Table 。
+
+- Note Type Table有各种模板以及对应的正则表达式，用于匹配一张卡片所需的笔记内容的范围
+
+```txt
+Basic: 
+((?:[^\n][\n]?)+) #flashcard ?\n*((?:\n(?:^.{1,3}$|^.{4}(?<!<!--).*))+)
+
+Cloze: 
+((?:[^\n][\n]?)+) #clozecard ?\n*((?:\n(?:^.{1,3}$|^.{4}(?<!<!--).*))+)
+```
+
+- Folder Table 有Obsidian当前的各个文件夹，这里的文件夹对应 Anki 中的牌组
+
+```txt
+外：國考考古題
+內：國考醫學知識
+```
+
+> 除了以上两处，建议打开 Add File link, Add Context, CurlyCloze, ID Comments
+
+### RSS阅读器 MrRSS
+
+[项目地址](https://github.com/WCY-dt/MrRSS)
+
+```zsh
+paru -S mrrss-appimage
+```
+
+插件配置：
+
+- 开启「Obsidian 集成」。这里的仓库名称和仓库路径，都是 Ob 笔记仓库存放 RSS 订阅文章所在的目录，而不是笔记仓库的目录。
+- 开启「RSSHub 集成」。可以自建RSSHub服务，也可以从[官方文档](https://docs.rsshub.app/zh/guide/instances)中找公开的 RSSHub 服务。
+
+
+
 - Utools：堪比瑞士军刀，尝试了下在wayland下用不了，无法打开软件界面。
 
 ```zsh
@@ -1381,13 +1639,61 @@ yay -S utools-bin
 应用：截图悬浮、取色
 ```
 
-- RSS 阅读器 Fluent Reader（没用过），可选越来越难用的 Folo，目前我只用 Folo 网页端
-- 记忆 Anki
+## Ventoy
+
+[项目地址](https://github.com/ventoy/Ventoy)
+
+Ventoy是一个制作可启动U盘的开源工具。支持启动 ISO/WIM/IMG/VHD(x)/EFI 等类型的文件。
+
+有了Ventoy你就无需反复地格式化U盘，只需要把文件直接拖到U盘里面就可以启动了，无需其他操作。
+
+```zsh
+paru -S ventoy-bin
+```
+
+重装[win11专业中文版](https://www.microsoft.com/zh-cn/software-download/windows11)
+
+```txt
+7zip / WinRAR
+A2DP Driver / HP M270 Mouse / Intel Driver / Nvidia Driver / Serafim M1 pro
+AutoHotkey
+Cherry Studio
+draw.io
+Epic / Steam
+Git
+Google Chrome / 火狐
+IDEA / JDK
+Typora
+VS Code
+Miniconda3 / uv
+Node.js
+OBS
+Obsidian / piclist
+QQ / Wechat / Telegram
+simpleTex
+FinalShell
+UC网盘 / 百度网盘 / 夸克网盘 / motrix
+虚拟机
+WPS / 微软全家通
+Zotero
+哈工大APP
+华为电脑管家
+火绒
+腾讯会议
+图吧工具箱 / 游戏加加
+小狼毫输入法
+章鱼加速器
+mpv
+folo
+MoeKoe music
+pot
+utools
+v2ray
+```
+
 - 应用商店 Sparkstore
 - RustDesk：跨平台远程桌面。（没用过）
 - Rclone：云端硬盘备份。（没用过）
-- Ventoy：多系统安装。
-- 乐谱软件 MuseScore（没用过）
 
 ## 外接触控板
 
@@ -1448,16 +1754,28 @@ Kernel modules 详解：
 - **`nvidia_drm`**: 它是“直接渲染管理器”（Direct Rendering Manager）。作用是让 Linux 内核（尤其是显示管理器，如 X11 或 Wayland）能够正确识别并管理显卡的显示输出。
 - **`nouveau`**:  Linux 社区开发的开源驱动。
 
+```zsh
+sudo  dmesg | grep nvidia
+```
+
 ### 安装nvidia驱动
 
 首先，从 [nouveau NVIDIA代号查询页](https://nouveau.freedesktop.org/CodeNames.html) 中查找外接显卡的系列代号(例如：NV110, NVC0)。我的4070的代号是 NV190，架构是 Ada Lovelace。
 
 ```zsh
 sudo pacman -Syu
+
 # nvidia-open 是内核模块
 # nvidia-utils 提供了驱动正常工作所需的一系列核心组件
 # lib32-nvidia-utils 解决游戏兼容性
-sudo pacman -S nvidia-dkms nvidia-utils lib32-nvidia-utils linux-headers --needed
+sudo pacman -S nvidia-open-dkms nvidia-utils lib32-nvidia-utils linux-headers --needed
+
+sudo pacman -R nvidia-open-dkms
+sudo pacman -S nvidia-dkms --needed
+
+add nvidia-settings to IgnorePkg? [y/N] 
+add opencl-nvidia to IgnorePkg? [y/N] 
+add libxnvctrl to IgnorePkg? [y/N] 
 ```
 
 开启 DRM 模式设置：Wayland 必须在内核启动早期就认出 NVIDIA 驱动，否则会出现“黑屏”或“无法进入桌面”。
@@ -1480,13 +1798,15 @@ sudo mkinitcpio -P
 sudo vim /etc/default/grub
 
 # 找到 GRUB_CMDLINE_LINUX_DEFAULT，在引号内加入 nvidia-drm.modeset=1
-# 例如：GRUB_CMDLINE_LINUX_DEFAULT="loglevel=3 quiet nvidia-drm.modeset=1"
+GRUB_CMDLINE_LINUX_DEFAULT="loglevel=3 quiet nvidia-drm.modeset=1"
 
 # 更新 GRUB
 sudo grub-mkconfig -o /boot/grub/grub.cfg
 ```
 
 重启电脑后，此时再使用 `nvidia-smi` 就输出正常了。
+
+> `watch -n 1 nvidia-smi` 每秒重复执行 nvidia-smi
 
 ```zsh
 # 测试pytorch gpu 版本能否正常运行
@@ -1613,6 +1933,34 @@ yay -S extension-manager-git
 - [archwiki安装指南](https://wiki.archlinux.org/title/Installation_guide)
 - [arttnba3 图文教程-附系统配置](https://arttnba3.cn/2023/09/25/DISTRO-0X00-INSTALL_ARCH_WINDOWS/)
 
+# 实用 Linux 命令
+
+1. 关闭 Linux 中运行在 localhost:3002 端口上的进程：
+
+```zsh
+# 查找占用 3002 端口的进程 ID（PID）
+sudo lsof -i :3002
+# 终止该进程
+sudo kill -9 <pid>
+```
+
+2. 查看当前目录所占磁盘空间
+
+du，即 disk usage
+
+- `-s` → **S**ummary
+- `-h` → **H**uman-readable
+- `-a` 显示所有文件（不只是目录）
+
+```zsh
+du -sh
+du -ah
+
+# 限制递归深度为1，输出当前目录下每个子目录的大小（也会包含当前目录自身的大小行）。
+du -h --max-depth=1
+```
+
+
 # Pacman 和 Yay 常用命令指南
 
 ## Pacman（Arch Linux 官方包管理器）
@@ -1626,10 +1974,15 @@ sudo pacman -Syu
 # 安装包
 sudo pacman -S 包名
 
+# 强制系统包管理器接管 pnpm 
+sudo pacman -S pnpm --overwrite "*"
+
 # -R 卸载包（保留依赖）
 # -Rs 卸载包及其依赖
 # -Rns 卸载包、依赖和配置文件
+# -Rdd 强制移除包而不检查依赖
 sudo pacman -Rns 包名
+sudo pacman -Rdd nvidia-utils lib32-nvidia-utils nvidia-open-dkms
 ```
 
 ### 查询操作
@@ -1688,6 +2041,14 @@ yay -Yc
 
 # 检查更新状态，查看当前哪些应用可以更新
 yay -Ps
+```
+
+## Paru（AUR 助手）
+
+```zsh
+# 安装包
+paru 模糊包名  
+paru -S 准确包名  
 ```
 
 ## 常用组合命令
@@ -1760,7 +2121,7 @@ wget -qO output.txt https://example.com/file.txt
 
 wget 支持递归下载 `-r, --recursive` ，curl不支持递归下载。
 
-## 压缩解压 zip 7z rar
+## 压缩解压 zip 7z rar tar
 
 zip 压缩
 
@@ -1839,14 +2200,53 @@ unrar l -p"yourpassword" archive.rar
 
 > zsh 的插件 x 也可以用于解压。
 
+```zsh
+# tar 压缩（具体是指打包，未压缩，非常推荐这种方式，因为压缩/解压都耗时，但是图片等都无法再压缩）
+tar -cf <自定义压缩包名称>.tar <待压缩目录的路径>
+
+# tar 解压
+tar -xf <待解压压缩包名称>.tar -C <解压到哪个路径>
+```
+
+tar.* 加压
+
+```zsh
+# 使用 gzip 压缩（最常用）
+tar -czvf 压缩包.tar.gz 目录或文件
+
+# 使用 bzip2 压缩（压缩率较高）
+tar -cjvf 压缩包.tar.bz2 目录或文件
+
+# 使用 xz 压缩（压缩率最高，速度较慢）
+tar -cJvf 压缩包.tar.xz 目录或文件
+```
+
+参数说明：
+
+- `c`：创建归档
+- `z` / `j` / `J`：选择压缩算法（gzip / bzip2 / xz）
+- `v`：显示详细过程（可省略）
+- `f`：指定归档文件名（必须放在选项最后，后面紧跟文件名）
+
+tar.* 解压
+
+```zsh
+# 如果不确定压缩格式，可省略 z/j/J（tar 会自动检测）
+# tar -xzvf 压缩包.tar.gz
+tar -xvf 压缩包.tar.gz
+```
+
+参数说明：
+
+- `x`：提取（解压）
+- 其他同压缩
+
 ## 文件管理 nnn
 
 [项目地址](https://github.com/jarun/nnn?tab=readme-ov-file)
 
 > `nnn` 可以分析磁盘使用情况、批量重命名、启动应用程序和选择文件。插件仓库拥有大量插件，可以进一步扩展功能，例如实时预览、(卸载)挂载磁盘、查找和列出、文件/目录差异、上传文件。一个补丁框架托管了大量用户提交的、主观性强的补丁。
 > `nnn` 也适配 android 系统上的 termux 终端。
-
-
 
 ## 文件搜索 ripgrep
 
@@ -1866,16 +2266,35 @@ sudo pacman -S btop
 
 ![[AI IDE#Claude Code CLI]]
 
-## codex
+## Codex
 
 ```zsh
-yay -S openai-codex-bin
+paru -S openai-codex-bin openai-codex-desktop
 ```
 
 登录账号：
 
 ```zsh
 codex auth login
+```
+
+Codex 常用命令：
+
+- `/model` 查看和切换当前使用的模型，同时可以调整推理强度。强度越高效果越好，但速度更慢、token 消耗更多，根据任务复杂度决定。
+- `/clear` 清除终端并开始新对话。不同任务之间建议用 `/clear` 重开，旧的上下文堆着没用，反而干扰效果。
+- `/exit` 退出 Codex，重新进入后使用 `/resume` 命令可以选择历史会话进行恢复，继续之前的工作。
+- 上下文快满时，Codex 会自动压缩，你也可以用 `/compact` 手动触发。
+- 在输入框里用 `@` 可以引用具体文件，让 Codex 重点关注某个文件的内容。
+- `/plan` 可以切换到 plan 模式：Codex 会先探索项目，问你一些澄清问题，输出计划文档等你确认，你确认没问题之后才开始写代码实现。
+
+默认情况下，Codex 执行文件修改或 shell 命令时都会请求确认，频繁操作时比较烦。可以在启动时添加参数完全跳过所有授权，去掉所有限制：
+
+```zsh
+# 全自动模式，在沙箱内运行（文件写入限制在工作目录）
+codex --full-auto
+
+# 完全跳过所有授权，去掉所有沙箱限制
+codex --dangerously-bypass-approvals-and-sandbox
 ```
 
 ## 云文件列表程序 OpenList
@@ -1902,4 +2321,130 @@ codex auth login
 # 下载时候关闭代理工具
 yuque-dl "https://www.yuque.com/yuque/thyzgp" -t "verified_books的值"
 ```
+
+## JSON处理器 jq
+
+[项目地址](https://github.com/jqlang/jq)
+
+> jq 可以让 JSON 输出更美观
+
+```zsh
+# 安装
+sudo pacman -S jq
+
+# 格式化输出json结果
+curl -s https://api.deepseek.com/chat/completions \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer 你的API_KEY" \
+  -d '{
+    "model": "deepseek-v4-flash",
+    "thinking": {"type": "disabled"},
+    "messages": [
+      {"role": "user", "content": "你好"}
+    ]
+  }' | jq
+```
+
+## 保留排版的PDF文档翻译 PDFMathTranslate
+
+[项目地址](https://github.com/PDFMathTranslate/PDFMathTranslate)
+
+```zsh
+# 安装
+uv tool install --python 3.12 pdf2zh
+
+# 使用
+pdf2zh document.pdf -s deepseek -p 1-5 -li en -lo zh 
+```
+
+参数说明：
+
+- `-s` 翻译服务
+- `-p` 翻译页数范围，缺省表示全文翻译
+- `-li` 原始语言
+- `-lo` 目标语言
+- `-t` 多线程数，缺省表示启用4线程
+- `--babeldoc` 使用实验性后端 [BabelDOC](https://funstory-ai.github.io/BabelDOC/) 翻译
+
+默认配置文件保存在 `~/.config/PDFMathTranslate/config.json` 。程序启动时会读取 config.json 的内容，然后读取环境变量的内容。如果某个环境变量存在，程序会优先使用该环境变量的内容，并更新配置文件。
+
+## 追踪AI编程用量 codeburn
+
+[项目地址](https://github.com/getagentseal/codeburn)
+
+用法：
+
+```zsh
+codeburn                        # interactive dashboard (default: 7 days)
+codeburn today                  # today's usage
+codeburn month                  # this month's usage
+codeburn report -p 30days       # rolling 30-day window
+codeburn report -p all          # every recorded session
+codeburn report --from 2026-04-01 --to 2026-04-10  # exact date range
+codeburn report --format json   # full dashboard data as JSON
+codeburn report --refresh 60    # auto-refresh every 60s (default: 30s)
+codeburn status                 # compact one-liner (today + month)
+codeburn status --format json
+codeburn export                 # CSV with today, 7 days, 30 days
+codeburn export -f json         # JSON export
+codeburn optimize               # find waste, get copy-paste fixes
+codeburn optimize -p week       # scope the scan to last 7 days
+codeburn compare                # side-by-side model comparison
+codeburn yield                  # track productive vs reverted/abandoned spend
+codeburn yield -p 30days        # yield analysis for last 30 days
+codeburn models                 # per-model token + cost table (last 30 days)
+codeburn models --by-task       # explode each model into per-task-type rows
+codeburn models --top 10        # only the top 10 by cost
+codeburn models --format markdown      # paste-friendly markdown table
+codeburn models --task feature         # filter to feature-development work
+codeburn models --provider claude      # filter to one provider
+```
+
+# 维护软件包
+
+**核心包管理器**：`pacman`  。处理官方仓库（如`core`、`extra`、`community`）的**预编译二进制包**。直接安装、更新、删除系统包。
+
+**AUR辅助工具**：[yay](https://github.com/jguer/yay)、[paru](https://github.com/morganamilo/paru)、aurman等。AUR是社区维护的**源代码仓库**，里面的包没有预编译二进制文件，而是提供一个`PKGBUILD`脚本，告诉你如何从源码或预编译资源构建包。 
+
+> [!info] yay和paru的作用就是：
+> - **自动下载**AUR的`PKGBUILD`和依赖
+> - **调用`makepkg`**（Arch的构建工具）编译并安装包
+> - **同时管理官方包和AUR包**（所以你只用`yay -Syu`就能更新所有东西）
+
+**底层构建工具**：`makepkg` 。真正执行编译、打包、安装的工作。yay/paru只是它的“智能调度器”。
+
+```zsh
+yay -S paru
+```
+
+## 准备 AUR 账号
+
+AUR 账号注册，大体流程和一般账号注册一致。不过如果需要向 AUR 仓库提交软件包，需要配置一个 SSH 公钥。该公钥可以注册时填写，也可以是注册后在账号设置填写。
+
+**提交包必需**：如果你打算上传或更新自己的 AUR 包，必须添加**SSH 公钥**（用于 Git over SSH 认证）。建议使用专用密钥对（`ssh-keygen -t ed25519 -C "aur@yourusername"`），并妥善保管私钥。
+
+为 AUR 创建专用密钥：
+
+```zsh
+ssh-keygen -t ed25519 -C "aur@pluinyiasnhg" -f ~/.ssh/id_ed25519_aur
+```
+
+将公钥内容复制到 AUR 账号的 SSH 公钥设置中：`cat ~/.ssh/id_ed25519_aur.pub`
+
+在 `~/.ssh/config` 中为 AUR 指定使用该密钥（可选，但推荐）：
+
+```txt
+Host aur.archlinux.org
+    IdentityFile ~/.ssh/id_ed25519_aur
+```
+
+保存后设置权限（重要）：
+
+```zsh
+chmod 600 ~/.ssh/config
+```
+
+## 编写 PKGBUILD 脚本
+
+将项目源码或第三方 `.deb` 包转化为通过 `yay` 安装的 AUR 软件包，其**核心是编写一个 `PKGBUILD` 脚本文件**。`yay` 本质上就是通过读取 `PKGBUILD` 中的指令，自动完成下载、解压、编译、提取并打包的过程。
 

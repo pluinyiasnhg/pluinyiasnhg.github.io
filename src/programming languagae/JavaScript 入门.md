@@ -136,6 +136,67 @@ function surprise(){
 </html>
 ```
 
+# 输出
+
+```js
+// 打印一个字符串
+console.log("Hello, World!");
+
+// 打印数字
+console.log(42);
+
+// 打印多个值，用逗号分隔，输出时用空格隔开
+console.log("姓名:", "Alice", "年龄:", 25);
+
+// 也可以用模板字符串（反引号 + ${}）
+let name = "Bob";
+let age = 30;
+console.log(`${name} 今年 ${age} 岁`);
+```
+
+```js
+// process.stdout.write 不会自动换行
+// 注意：它只能输出字符串，数字要先转成字符串
+process.stdout.write("A");
+process.stdout.write("B");
+process.stdout.write("C");
+// 输出：ABC（都在同一行）
+```
+
+# 模块导入
+
+Node.js 使用 CommonJS 模块规范，核心就两个东西：
+
+- 用 `require()` 导入模块
+- 用 `module.exports` 导出内容
+
+```js
+// 导入内置模块
+const os = require('os');
+
+// 导入自定义文件
+const utils = require('./utils');
+
+// 导入第三方包
+const { PriorityQueue } = require('@datastructures-js/priority-queue');
+```
+
+除了 CommonJS，JavaScript 还有一套更现代的模块系统叫 **ES6 模块**（ESM），用 `import`/`export` 语法：
+
+```js
+// 导出
+export function add(a, b) { return a + b; }
+export default class Calculator { ... }
+
+// 导入
+import { add } from './math.js';
+import Calculator from './calculator.js';
+```
+
+ES6 模块和 CommonJS 的主要区别：ES6 是**静态导入**，在编译时就确定了依赖关系；CommonJS 是**动态加载**，运行时才去找模块。
+
+目前大多数 OJ 平台和 LeetCode 的 JavaScript 环境仍然用 CommonJS（`require`），所以你刷题时用 `require` 就行。了解 ES6 模块主要是为了以后写前端项目时用。
+
 # JS变量和常量
 
 变量语法格式：`let 变量名`

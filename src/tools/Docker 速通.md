@@ -10,9 +10,11 @@ category:
 
 学习[《尚硅谷3小时速通Docker教程》](https://www.bilibili.com/video/BV1Zn4y1X7AZ) ，视频配速 1.5。写的乱糟糟的，因为当时觉得这个3小时速通教程，只是打个草稿，后续会看尚硅谷另一个14小时左右的教程补全。
 
+[Docker Hub](https://hub.docker.com/) ：Docker 镜像的应用市场，可以查看并下载指定版本的镜像文件。
+
 <!-- more -->
 
-# docker 安装
+# Docker 安装
 
 阿里云容器镜像服务 ACR 提供了官方的镜像加速器，从而加速官方镜像的下载，参考[官方文档](https://help.aliyun.com/zh/acr/user-guide/accelerate-the-pulls-of-docker-official-images)配置镜像加速器。
 
@@ -68,15 +70,14 @@ sudo systemctl enable docker
 
 解决：将用户加入docker组。执行 `sudo usermod -aG docker $USER`，然后**注销并重新登录** 。
 
-# docker 命令
+# Docker 命令
 
-镜像的完整名称是 镜像名:版本
-[Docker Hub](https://hub.docker.com/) Docker 镜像的应用市场，可以查看并下载指定版本的镜像文件。
+镜像的完整名称是 **镜像名:版本** 。
 
-- docker search 检索
-- docker pull 下载
-- docker images 已下载的镜像列表，images 即 image ls
-- docker rmi 删除镜像，rmi 即 remove image
+- `docker search 镜像名` 检索
+- `docker pull 镜像完整名` 下载
+- `docker images` 已下载的镜像列表，images 即 image ls
+- `docker rmi` 删除镜像，rmi 即 remove image
 
 - 运行：docker run
 - 查看：docker ps
@@ -96,19 +97,163 @@ sudo systemctl enable docker
 
 docker run
 
-- -d 后台启动
-- --name 指定容器名字，默认为随机名字
+- `-d` 后台启动
+- `--name` 指定容器名字，默认为随机名字
 - `-p 主机端口:容器端口` 端口映射，容器中有一套独立于主机的文件系统。不同容器可以共享一个端口号，互不干扰；但是主机端口号不能重复。
 - `--restart always` 容器开机自启
 
-容器创建后，`docker ps` 确认容器创建是否正在运行，输出内容没有新容器，则用 `docker ps -a` 查看容器的状态，以及 `docker logs 容器名` 查看容器日志。
+容器创建后，`docker ps` 确认容器创建是否正在运行。如果看到容器的状态为 Up，则安装成功。
+
+输出内容没有新容器，则用 `docker ps -a` 查看容器的状态，以及 `docker logs 容器名` 查看容器日志。
 
 批量移除（删除）容器：
 
 `docker ps -aq` 会打印所有容器的 ID。`docker rm -f $(docker ps -aq)` 强制移除所有容器，包括正在运行中的（-f 保证）。
 
+### MongoDB
+
+```zsh
+docker run -d \
+  --name mongodb \
+  -p 27017:27017 \
+  -v mongodb_data:/data/db \
+  mongo:latest
+```
+
+#### 🔹 1. 停止容器
+
+```bash
+docker stop mongodb
+```
+
+这会优雅地停止名为 `mongodb` 的容器（等几秒让它保存数据再关闭）。
+如果容器卡死，可用 `docker kill mongodb` 强制停止。
+
+#### 🔹 2. 删除容器
+
+```bash
+docker rm mongodb
+```
+
+注意：**必须先停止容器才能删除**（除非加 `-f` 强制删除）。
+
+```bash
+docker rm -f mongodb
+```
+
+这会**强制停止并删除**容器（不推荐在正常流程中使用，因为可能丢失未写入磁盘的数据）。
+
+#### 🔹 3. （可选）确认删除成功
+
+```bash
+docker ps -a
+```
+
+查看所有容器（包括已停止的），如果看不到 `mongodb` 说明删除成功。
+
+#### 📦 关于数据卷
+
+你之前创建时用了 `-v mongodb_data:/data/db`，**容器删除后数据卷不会自动删除**。
+
+如果将来想重新创建同名容器，数据仍然在。如果想**彻底删除数据**（比如不想保留爬虫数据库），运行：
+
+```bash
+docker volume rm mongodb_data
+```
+
+⚠️ 注意：这会永久删除所有 MongoDB 数据库内容，无法恢复。
+
+#### 🧹 完全清理（删除容器 + 数据卷 + 镜像）
+
+```bash
+docker stop mongodb && docker rm mongodb分词
+docker volume rm mongodb_data
+docker rmi mongodb/mongodb-community-server:latest   # 根据你实际用的镜像名调整
+```
+
+但现在用不到这么彻底，一般只需 `docker stop` + `docker rm` 就够了。
+
+下次想重新跑，直接用之前给你的 `docker run` 命令就行。
+
+### Redis
+
+```zsh
+docker run -d \
+  --name redis \
+  -p 6379:6379 \
+  -v redis_data:/data \
+  redis:latest
+```
+
+### ElasticSearch
+
+```zsh
+docker run -d \
+  --name elasticsearch \
+  -p 9200:9200 \
+  -p 9300:9300 \
+  -e "discovery.type=single-node" \
+  -e "xpack.security.enabled=false" \
+  -e "xpack.security.http.ssl.enabled=false" \
+  -e "xpack.security.transport.ssl.enabled=false" \
+  -v es_data:/usr/share/elasticsearch/data \
+  elasticsearch:9.1.4
+```
+
+> `docker run` 命令中，额外增加三个 `-e` 参数，分别关闭安全主开关、HTTP 层的 SSL 以及节点间传输的 SSL。
+
+安装 ElasticSearch 中文分词插件 [analysis-ik](https://github.com/infinilabs/analysis-ik)：
+
+```bash
+# 进入容器内部
+docker exec -it elasticsearch /bin/bash
+
+# 使用 ES 官方工具在线下载并安装 IK 插件
+bin/elasticsearch-plugin install https://get.infini.cloud/elasticsearch/analysis-ik/9.1.4
+
+# 安装完成后退出容器
+exit
+
+# 重启容器，使插件生效
+docker restart elasticsearch
+```
+
+### RabbitMQ
+
+```zsh
+docker run -d \
+  --name rabbitmq \
+  -p 5672:5672 \
+  -p 15672:15672 \
+  -v rabbitmq_data:/var/lib/rabbitmq \
+  -e RABBITMQ_DEFAULT_USER=admin \
+  -e RABBITMQ_DEFAULT_PASS=admin \
+  rabbitmq:management
+```
+
+- `-p 5672:5672`：映射 AMQP 协议端口（客户端连接用）。
+- `-p 15672:15672`：映射管理 Web 界面端口。
+
+> RabbitMQ 默认已经有一个内置的 `guest` 用户，密码也是 `guest`，并且默认无需额外设置即可启动。但需要注意：**默认用户 `guest/guest` 只允许从 localhost（本机）连接**，如果从外部（如其他 Docker 容器或宿主机之外的机器）连接会失败。
+
+```zsh
+# 删除指定队列
+docker exec <容器名或ID> rabbitmqctl delete_queue <队列名>
+
+# 示例
+docker exec rabbitmq rabbitmqctl delete_queue my_queue
+```
+
+## 进入容器
+
 docker exec
-进入容器 `docker exec -it mynginx bash` ，指定容器，除了用容器名，还可以用容器 ID。ID 长度很长，可以只用前3位指定容器。
+
+- `docker exec -it mynginx bash` ，指定容器，除了用容器名，还可以用容器 ID。ID 长度很长，可以只用前3位指定容器。
+
+```zsh
+# 进入 mongodb 容器，执行 mongosh 命令
+docker exec -it mongodb mongosh
+```
 
 ## 保存镜像
 
@@ -132,7 +277,7 @@ docker tag mynginx:v1.0 yonglu/mynginx:latest
 docker push yonglu/mynginx:latest
 ```
 
-# docker 存储
+# Docker 存储
 
 每次 docker 启动容器，都是打开一个全新容器，之前做的修改都消失了。此外，正在运行的容器如果突然崩溃，我们做的修改也会丢失。于是需要像文档一样随时保存容器数据。
 
@@ -165,7 +310,7 @@ dokcer volume 有一组有关卷映射的命令。
 容器之间访问。前面讲了利用端口映射，外部设备通过公网访问容器。容器之间可以直接用 容器IP+容器端口 互相访问，而不是一个容器通过机器的公网IP，通过公网访问另一个容器。
 docker 会为每个容器分配一个唯一的容器 IP，通过命令 `ip a` 可以看到一张名为 docker0 的网卡。
 
-# docker 网络
+# Docker 网络
 
 但是 docker0 分配的IP由于各种原因可能会变化，参考现实中人们访问网站是通过域名而非 IP，docker 提供了类似功能的自定义网络。
 
