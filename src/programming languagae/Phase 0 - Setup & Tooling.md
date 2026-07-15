@@ -1,6 +1,6 @@
 ---
 title: Phase 0 - Setup & Tooling
-date: 2026-06-12
+date: 2026-06-16
 tags:
   - Agent
 category:
@@ -625,14 +625,14 @@ Colab 与本地 Jupyter 的区别：
 
 **Notebook vs Script：何时使用哪种**
 
-| 使用 notebook 的场景 | 使用 script 的场景 |
-|----------------------|---------------------|
-| 探索数据集 | 训练流水线 |
-| 原型设计模型 | 可复用的工具函数 |
-| 可视化结果 | 包含 `if __name__` 的代码 |
-| 解释你的工作 | 按计划运行的代码 |
-| 快速实验 | 生产环境代码 |
-| 课程练习 | 包和库 |
+| 使用 notebook 的场景 | 使用 script 的场景        |
+| --------------- | -------------------- |
+| 探索数据集           | 训练流水线                |
+| 原型设计模型          | 可复用的工具函数             |
+| 可视化结果           | 包含 `if __name__` 的代码 |
+| 解释你的工作          | 按计划运行的代码             |
+| 快速实验            | 生产环境代码               |
+| 课程练习            | 包和库                  |
 
 **原则：在 notebook 中进行探索，在 script 中交付。**
 
@@ -1448,7 +1448,1084 @@ Test :   3750 (15.0%)
 
 ## 概念
 
+一个终端，三个程序，同时运行。你可以断开连接，返回主界面，再通过 SSH 登录，然后重新连接，训练会持续进行。
 
+```mermaid
+graph TD
+    subgraph tmux["tmux session: training"]
+        subgraph top["Top row"]
+            P1["Pane 1: Training run<br/>python train.py<br/>Epoch 12/100 ..."]
+            P2["Pane 2: GPU monitor<br/>watch -n1 nvidia-smi<br/>GPU: 78% | Mem: 14/24G"]
+        end
+        P3["Pane 3: Logs + experiments<br/>tail -f logs/train.log | grep loss"]
+    end
+```
 
 ## Build It
 
+### 了解你的 Shell
+
+```zsh
+# 确认你在用的是哪个 shell，我的是zsh
+echo $SHELL
+
+# 四处游走
+cd ~/projects/ai-engineering-from-scratch
+pwd
+ls -la
+
+# 清屏
+clear   # or Ctrl+L
+
+# 取消当前正在运行的命令
+# Ctrl+C
+
+# 挂起当前正在运行的命令（使用 fg 恢复）
+# Ctrl+Z
+```
+
+### Piping and redirects
+
+管道（Piping）用于连接命令。它是处理日志、过滤输出和串联工具的方式。你会经常用到它。
+
+```zsh
+# 统计 log 中出现多少次 loss
+cat train.log | grep "loss" | wc -l
+
+# Extract just the loss values from training output
+# 从 train.log 文件中提取所有包含“loss:”的行，并只保留每行最后一个字段（通常是损失值），然后将这些值写入 losses.txt 文件。
+grep "loss:" train.log | awk '{print $NF}' > losses.txt
+
+# Watch a log file update in real time, filtering for errors
+# 实时监控 train.log 文件的新增内容，并过滤出包含 ERROR 的行显示在终端。
+tail -f train.log | grep --line-buffered "ERROR"
+
+# Sort experiments by final accuracy
+# 从 results/ 目录下所有 .log 文件中提取出包含 final_accuracy 的行，然后按准确率从高到低排列，类似排行榜。
+grep "final_accuracy" results/*.log | sort -t= -k2 -n -r
+
+# 重定向 stdout 和 stderr 到不同的文件
+python train.py > output.log 2> errors.log
+
+# 把 stderr 的内容也发送到 stdout 当前指向的地方
+# 2 代表标准错误（stderr）
+# 1 代表标准输出（stdout）
+python train.py > train_full.log 2>&1
+```
+
+### 后台进程
+
+训练通常需要花费数小时，总不会有人想要让终端一直显示当前的训练进程。
+
+```zsh
+# Run in background (output still goes to terminal)
+python train.py &
+
+# Run in background, immune to hangup (closing terminal won't kill it)
+nohup python train.py > train.log 2>&1 &
+
+# 查看后台运行中的进程有哪些
+jobs
+ps aux | grep train.py
+
+# 将一个后台进程恢复到前台
+fg %1
+
+# 杀死后台进程
+kill %1
+# or 先用PID找到进程，再杀死它
+kill $(pgrep -f "train.py")
+```
+
+| Method            | 终端关闭，进程是否存活 | 可以重新连接吗 |
+| ----------------- | ----------- | ------- |
+| `command &`       | No          | No      |
+| `nohup command &` | Yes         | No      |
+| `screen` / `tmux` | Yes         | Yes     |
+
+> “Can reattach?” 在这里的意思是“能否重新连接？”或“能否重新附加？”。具体指当终端关闭后，是否可以再次将终端会话附加到该后台进程的输入/输出流上（例如使用 screen 或 tmux 重新连接）。
+
+### tmux
+
+tmux 允许你创建具有多个窗格的持久终端会话。它是管理训练运行最有用的工具。
+
+```zsh
+# Start a named session
+tmux new -s training
+
+# 水平分屏
+# Ctrl+B then "
+
+# 垂直分屏
+# Ctrl+B then %
+
+# 在panes中移动，每次分屏都会得到一个pane
+# Ctrl+B then arrow keys
+
+# Detach (session keeps running)
+# Ctrl+B then d
+
+# Reattach
+tmux attach -t training
+
+# List sessions
+tmux ls
+
+# Kill a session
+tmux kill-session -t training
+```
+
+典型的 AI 工作流会话：
+
+```zsh
+tmux new -s train
+
+# Pane 1: 开始训练
+python train.py --epochs 100 --lr 1e-4
+
+# Ctrl+B, " to split, then 监控GPU运行情况
+watch -n1 nvidia-smi
+
+# Ctrl+B, % to split vertically, 查看日志末尾
+tail -f logs/experiment.log
+
+# Now detach with Ctrl+B, d
+# SSH out, go get coffee, come back
+# tmux attach -t train
+```
+
+### 使用 htop 和 nvtop 进行监控
+
+```zsh
+# 系统进程 (better than top)
+htop
+
+# GPU进程 (if you have NVIDIA GPU)
+nvtop
+
+# Quick GPU check without nvtop
+nvidia-smi
+
+# 每秒实时观测GPU
+watch -n1 nvidia-smi
+
+# 看看哪个进程在使用GPU
+nvidia-smi --query-compute-apps=pid,name,used_memory --format=csv
+```
+
+> 比起 htop，我更喜欢用 btop
+
+### 通过 SSH 连接远程GPU设备
+
+```zsh
+# 基本连接
+ssh user@gpu-box-ip
+
+# 携带密钥连接
+ssh -i ~/.ssh/my_gpu_key user@gpu-box-ip
+
+# 将文件复制到远程
+scp model.pt user@gpu-box-ip:~/models/
+
+# 从远程复制文件
+scp user@gpu-box-ip:~/results/metrics.json ./
+
+# 同步整个目录 (faster for many files)
+rsync -avz ./data/ user@gpu-box-ip:~/data/
+
+# 端口转发（在本地访问远程 Jupyter/TensorBoard）
+ssh -L 8888:localhost:8888 user@gpu-box-ip
+# 现在在浏览器中打开 localhost:8888
+
+# 为了方便起见，这里配置了 SSH。
+# 添加到 ~/.ssh/config：
+# Host gpu
+#     HostName 192.168.1.100
+#     User ubuntu
+#     IdentityFile ~/.ssh/gpu_key
+#
+# 然后就：
+# ssh gpu
+```
+
+### 使用别名
+
+将下列命令组合的别名添加到 `~/.zshrc` 中：
+
+```zsh
+# --- GPU ---
+
+# GPU 状态概览
+alias gpu='nvidia-smi --query-gpu=index,name,utilization.gpu,memory.used,memory.total,temperature.gpu --format=csv,noheader'
+# GPU 实时查看，按秒更新
+alias gpuwatch='watch -n1 nvidia-smi'
+# 在使用GPU的进程概览
+alias gpuprocs='nvidia-smi --query-compute-apps=pid,name,used_memory --format=csv'
+
+# --- Training control ---
+
+# 终止所有 Python 训练进程
+alias killtraining='pkill -f "python.*train"'
+
+killtrain() {
+    if [ -z "$1" ]; then
+        pkill -f "python.*train"
+        echo "Killed all python training processes"
+    else
+        pkill -f "$1"
+        echo "Killed processes matching: $1"
+    fi
+}
+
+# --- Virtual environments ---
+
+# 快速激活虚拟环境
+alias ae='source .venv/bin/activate'
+alias de='deactivate'
+# 创建并激活虚拟环境
+alias mkvenv='python -m venv .venv && source .venv/bin/activate'
+# uv 创建并激活虚拟环境
+alias uvvenv='uv venv && source .venv/bin/activate'
+
+# --- Log watching ---
+
+# 观察训练损失
+alias watchloss='tail -f logs/*.log | grep --line-buffered "loss"'
+alias watchacc='tail -f logs/*.log | grep --line-buffered "accuracy\|acc"'
+alias watcherr='tail -f logs/*.log | grep --line-buffered "ERROR\|error\|Exception"'
+
+taillog() {
+    local pattern="${1:-loss}"
+    tail -f logs/*.log 2>/dev/null | grep --line-buffered "$pattern"
+}
+
+# --- Disk space (training data fills disks fast) ---
+
+# 查看当前磁盘分区用量
+alias diskuse='df -h .'
+# 逆序列出当前目录中 >100M 的大文件
+alias bigfiles='find . -type f -size +100M | xargs du -h 2>/dev/null | sort -rh | head -20'
+alias bigmodels='find . \( -name "*.pt" -o -name "*.pth" -o -name "*.safetensors" -o -name "*.ckpt" -o -name "*.bin" \) | xargs du -h 2>/dev/null | sort -rh | head -20'
+
+# --- Quick environment checks ---
+
+# 检查GPU是否可用
+alias checkgpu='python -c "import torch; print(f\"CUDA: {torch.cuda.is_available()}\"); print(f\"Device: {torch.cuda.get_device_name(0)}\") if torch.cuda.is_available() else None"'
+# 检查当前虚拟环境
+alias checkenv='python --version && pip --version && python -c "import torch; print(f\"PyTorch {torch.__version__}, CUDA {torch.cuda.is_available()}\")" 2>/dev/null'
+
+# --- tmux shortcuts ---
+
+alias ta='tmux attach -t'
+alias tls='tmux ls'
+alias tn='tmux new -s'
+alias tk='tmux kill-session -t'
+
+trainenv() {
+    local name="${1:-train}"
+    tmux new-session -d -s "$name"
+    tmux split-window -h -t "$name"
+    tmux split-window -v -t "$name"
+    tmux send-keys -t "$name:0.1" 'watch -n1 nvidia-smi' C-m
+    tmux send-keys -t "$name:0.2" 'htop' C-m
+    tmux select-pane -t "$name:0.0"
+    tmux attach -t "$name"
+}
+
+# --- SSH helpers ---
+
+syncto() {
+    if [ -z "$1" ] || [ -z "$2" ]; then
+        echo "Usage: syncto <host> <remote_path> [local_path]"
+        echo "Example: syncto gpu ~/data ./data"
+        return 1
+    fi
+    local host="$1"
+    local remote="$2"
+    local local_path="${3:-.}"
+    rsync -avz --progress "$local_path" "${host}:${remote}"
+}
+
+syncfrom() {
+    if [ -z "$1" ] || [ -z "$2" ]; then
+        echo "Usage: syncfrom <host> <remote_path> [local_path]"
+        echo "Example: syncfrom gpu ~/results ./results"
+        return 1
+    fi
+    local host="$1"
+    local remote="$2"
+    local local_path="${3:-.}"
+    rsync -avz --progress "${host}:${remote}" "$local_path"
+}
+
+# --- Experiment management ---
+
+newexp() {
+    local name="${1:-experiment}"
+    local dir="experiments/${name}_$(date +%Y%m%d_%H%M%S)"
+    mkdir -p "$dir/logs" "$dir/checkpoints" "$dir/configs"
+    echo "Created experiment directory: $dir"
+    echo "$dir"
+}
+
+lastexp() {
+    ls -dt experiments/*/ 2>/dev/null | head -1
+}
+
+# --- Model download helpers ---
+
+hfdownload() {
+    if [ -z "$1" ]; then
+        echo "Usage: hfdownload <model_id> [filename]"
+        echo "Example: hfdownload meta-llama/Llama-2-7b config.json"
+        return 1
+    fi
+    local model="$1"
+    local file="${2:-}"
+    if [ -n "$file" ]; then
+        wget "https://huggingface.co/${model}/resolve/main/${file}"
+    else
+        echo "Cloning full repo (use git-lfs)..."
+        git lfs install
+        git clone "https://huggingface.co/${model}"
+    fi
+}
+
+# --- Process management ---
+
+memhogs() {
+    ps aux --sort=-%mem 2>/dev/null | head -11 || ps aux -m | head -11
+}
+
+psg() {
+    ps aux | grep -v grep | grep -i "$1"
+}
+```
+
+### 常见 AI 终端Pattern
+
+以下终端命令会在实战中反复用到。
+
+```zsh
+# 运行训练，记录所有数据，完成后通知
+python train.py 2 >& 1 | tee train.log; echo "DONE" | mail -s "Training complete" you@email.com
+
+# 并排比较两个实验日志
+diff <(grep "accuracy" exp1.log) <(grep "accuracy" exp2.log)
+
+# 查找最大的模型文件（清理磁盘空间）
+find . -name "*.pt" -o -name "*.safetensors" | xargs du -h | sort -rh | head - 20
+
+# 从 Hugging Face 下载模型
+wget https://huggingface.co/model/resolve/main/model.safetensors
+
+# 解压tar.gz数据集
+tar xzf dataset.tar.gz -C ./data/
+
+# 统计所有 Python 文件中的行数（看看你的项目有多大）
+find . -name "*.py" | xargs wc -l | tail - 1
+
+# 检查磁盘空间（训练数据会很快填满磁盘）
+df -h
+du -sh ./data/*
+
+# 训练前检查环境变量
+env | grep -i cuda
+env | grep -i torch
+```
+
+## Use It
+
+| 工具                 | 适用场景                 |
+| ------------------ | -------------------- |
+| tmux               | 每一次模型训练运行（需要三个pane时） |
+| `tail -f` + `grep` | 实时监控训练日志             |
+| `nohup` / `&`      | 快速将任务放入后台运行          |
+| `htop` / `nvtop`   | 调试训练速度慢、显存溢出（OOM）等错误 |
+| SSH + `rsync`      | 在云端 GPU 服务器上开展工作     |
+| 管道 + 重定向           | 处理和过滤实验结果            |
+| 别名 (Aliases)       | 节省重复输入命令的时间          |
+
+## Exercises
+
+练习1 ：安装 tmux，创建一个包含三个窗格的会话，在一个窗格中运行 `htop` ，在另一个窗格中运行 `watch -n1 date` ，在第三个窗格中运行 Python 脚本。分离并重新连接。
+
+```zsh
+# alias: tn training
+tmux new -s training
+# 第一窗格
+htop
+
+# 水平分屏
+# Ctrl+B then "
+# 第二窗格
+watch -n1 date
+
+# 垂直分屏
+# Ctrl+B then %
+# 第三窗格
+python
+
+# Detach (session keeps running)
+# Ctrl+B then d
+
+# Reattach
+# alias: ta training
+tmux attach -t training
+
+# List sessions
+# alias: tls
+tmux ls
+
+# Kill a session
+# alias: tk training
+tmux kill-session -t training
+```
+
+练习3 ：创建一个名为 fake_train.log 的虚假训练日志，内容为 `for i in $(seq 1 100); do echo "epoch $i loss: $(echo "scale=4; 1/$i" | bc)"; sleep 0.1; done > fake_train.log` ，然后使用 `grep` 、 `tail` 和 `awk` 提取损失值
+
+```zsh
+for i in $(seq 1 100); do echo "epoch $i loss: $(echo "scale=4; 1/$i" | bc)"; sleep 0.1; done > fake_train.log
+
+grep "loss:" fake_train.log | awk '{print $NF}' > losses.txt
+```
+
+# Linux for AI
+
+## 学习目标
+
+- 从命令行导航 Linux 文件系统并执行基本的文件操作  
+- 使用 `chmod` 和 `chown` 管理文件权限，以解决 “Permission denied”（权限不足）错误  
+- 使用 `apt` 安装系统软件包，并为 AI 工作配置一台全新的 GPU 服务器  
+- 识别经常让在远程机器上工作的开发者踩坑的 macOS 与 Linux 之间的差异
+
+## 概念
+
+根目录 `/` 下有：
+
+- `home/` 家目录
+- `tmp/` 临时文件目录
+- `usr/` 系统程序和系统库
+- `etc/` 配置文件
+- `var/log/` 日志文件
+- `mnt/` 或 `/media/` 外部磁盘
+- `proc` 和 `/syss` 是虚拟文件，不占用实际硬盘空间，而是存在于**系统内存**中。
+- 等等
+
+> 在 Linux 中，二进制文件存在于 `/usr/bin/`, `/usr/local/bin/` ；在 MacOS 中，存在于 `/opt/homebrew/` 。 
+
+```mermaid
+graph TD
+    root["/"] --> home["home/your-username/<br/>Your files — clone repos, run training"]
+    root --> tmp["tmp/<br/>Temporary files, cleared on reboot"]
+    root --> usr["usr/<br/>System programs and libraries"]
+    root --> etc["etc/<br/>Config files"]
+    root --> varlog["var/log/<br/>Logs — check when something breaks"]
+    root --> mnt["mnt/ or /media/<br/>External drives and volumes"]
+    root --> proc["proc/ and /sys/<br/>Virtual files — kernel and hardware info"]
+```
+
+## Build It
+
+### 必要命令
+
+文件之间来回穿梭
+
+```zsh
+pwd                         # Where am I?
+ls                          # What's here?
+ls -la                      # What's here, including hidden files with details?
+cd /path/to/dir             # Go there
+cd ~                        # Go home
+cd ..                       # Go up one level
+```
+
+文件和目录
+
+```zsh
+mkdir my-project            # Create a directory
+mkdir -p a/b/c              # Create nested directories in one shot
+
+cp file.txt backup.txt      # Copy a file
+cp -r src/ src-backup/      # Copy a directory (recursive)
+
+mv old.txt new.txt          # Rename a file
+mv file.txt /tmp/           # Move a file
+
+rm file.txt                 # Delete a file (no trash, it's gone)
+rm -rf my-dir/              # Delete a directory and everything inside
+```
+
+读取文件内容
+
+```zsh
+cat file.txt                # Print entire file
+head -20 file.txt           # First 20 lines
+tail -20 file.txt           # Last 20 lines
+tail -f log.txt             # Follow a log file in real time (Ctrl+C to stop)
+less file.txt               # Scroll through a file (q to quit)
+```
+
+搜索文件内容
+
+```zsh
+grep "error" training.log           # Find lines containing "error"
+grep -r "learning_rate" .           # Search all files in current directory
+grep -i "cuda" config.yaml          # Case-insensitive search
+
+find . -name "*.py"                 # Find all Python files under current dir
+find . -name "*.ckpt" -size +1G     # Find checkpoint files larger than 1GB
+```
+
+### 权限管理
+
+```zsh
+chmod +x train.sh           # Make a script executable
+chmod 755 deploy.sh         # Owner: full, others: read+execute
+chmod 644 config.yaml       # Owner: read+write, others: read only
+
+chown user:group file.txt   # Change who owns a file (needs sudo)
+```
+
+### 软件包更新
+
+```zsh
+sudo apt update             # Refresh the package list (always do this first)
+sudo apt install -y htop    # Install a package (-y skips confirmation)
+sudo apt install -y build-essential  # C compiler, make, etc. Needed by many Python packages
+sudo apt install -y tmux    # Terminal multiplexer (keep sessions alive after disconnect)
+
+apt list --installed        # What's installed?
+sudo apt remove htop        # Uninstall
+```
+
+### 进程和systemd
+
+当你的训练程序卡住，或者你需要检查正在运行的程序时：
+
+```zsh
+htop                        # Interactive process viewer (q to quit)
+ps aux | grep python        # Find running Python processes
+kill 12345                  # Gracefully stop process with PID 12345
+kill -9 12345               # Force kill (use when graceful doesn't work)
+nvidia-smi                  # GPU processes and memory usage
+```
+
+systemd 管理服务（后台守护进程）
+
+```zsh
+sudo systemctl start nginx          # Start a service
+sudo systemctl stop nginx           # Stop it
+sudo systemctl restart nginx        # Restart it
+sudo systemctl status nginx         # Check if it's running
+sudo systemctl enable nginx         # Start automatically on boot
+```
+
+### 磁盘空间
+
+GPU 服务器的磁盘空间通常有限，模型和数据集会很快将其填满。
+
+```zsh
+df -h                       # Disk usage for all mounted drives
+df -h /home                 # Disk usage for /home specifically
+
+du -sh *                    # Size of each item in current directory
+du -sh ~/.cache             # Size of your cache (pip, huggingface models land here)
+du -sh /data/checkpoints/   # Check how big your checkpoints are
+
+# Find the biggest space hogs
+du -h --max-depth=1 / 2>/dev/null | sort -hr | head -20
+```
+
+常用的节省磁盘空间命令：
+
+清理缓存，以及训练过程中保存的模型权重文件。
+
+```zsh
+# Clear pip cache
+pip cache purge
+
+# Clear apt cache
+sudo apt clean
+
+# Remove old checkpoints you don't need
+rm -rf checkpoints/epoch_01/ checkpoints/epoch_02/
+```
+
+### 网络
+
+```zsh
+# Download files
+wget https://example.com/model.bin                   # Download a file
+curl -O https://example.com/data.tar.gz              # Same thing with curl
+curl -s https://api.example.com/health | python3 -m json.tool  # Hit an API, pretty-print JSON
+
+# Transfer files between machines
+scp model.bin user@remote:/data/                     # Copy file to remote machine
+scp user@remote:/data/results.csv .                  # Copy file from remote to local
+scp -r user@remote:/data/checkpoints/ ./local-dir/   # Copy directory
+
+# Sync directories (大容量文件传输时，速度要比scp更快, 支持断点重续)
+rsync -avz --progress ./data/ user@remote:/data/
+rsync -avz --progress user@remote:/results/ ./results/
+```
+
+### 保持会话活跃
+
+在 tmux 中运行长时间训练任务。
+
+```zsh
+tmux new -s train           # Start a new session named "train"
+# 开始训练后......
+# Ctrl+B, then D            # Detach (training keeps running)
+
+tmux ls                     # List sessions
+tmux attach -t train        # Reattach to session
+
+# Inside tmux:
+# Ctrl+B, then %            # Split pane vertically
+# Ctrl+B, then "            # Split pane horizontally
+# Ctrl+B, then arrow keys   # Switch between panes
+```
+
+### WSL2 (windows)
+
+如果你使用的是 Windows 系统，WSL2 可以为你提供一个真正的 Linux 环境。
+
+在 WSL 中，Windows 文件位于 `/mnt/c/Users/YourName/` 目录下。
+
+```zsh
+# In PowerShell (admin)
+wsl --install -d Ubuntu-24.04
+
+# After restart, open Ubuntu from Start menu
+sudo apt update && sudo apt upgrade -y
+```
+
+## Exercises
+
+练习四：使用 `df -h` 检查可用磁盘空间，然后使用 `du -sh ~/.cache/*` 查找缓存中占用空间的内容。
+
+```zsh
+❯ df -h
+Filesystem                Size  Used Avail Use% Mounted on
+/dev/nvme0n1p4            866G  433G  389G  53% /
+devtmpfs                   16G     0   16G   0% /dev
+tmpfs                      16G  819M   15G   6% /dev/shm
+efivarfs                  268K  212K   52K  81% /sys/firmware/efi/efivars
+tmpfs                     6.2G  2.6M  6.2G   1% /run
+tmpfs                      16G   44M   16G   1% /tmp
+none                      1.0M     0  1.0M   0% /run/credentials/systemd-journald.service
+/dev/nvme0n1p5            492G  159G  308G  35% /mnt/steam
+/dev/nvme0n1p3            767M  202M  566M  27% /boot
+none                      1.0M  4.0K 1020K   1% /run/credentials/libvirtd.service
+tmpfs                     3.1G  216K  3.1G   1% /run/user/1000
+wechat-appimage.AppImage  275M  275M     0 100% /tmp/.mount_wechatoMDhJP
+```
+
+Linux 的磁盘挂载列表里包含了三种不同类型的“文件系统”：**物理磁盘**、**内存虚拟盘（tmpfs）** 以及 **应用临时挂载点**。
+
+真实的物理硬盘分区：
+
+- `/dev/nvme0n1p4` (866G)：**根目录 `/`**，系统和绝大部分数据都在这里。
+- `/dev/nvme0n1p5` (492G)：挂载在 `/mnt/steam`，专门用来放游戏或大文件的。
+- `/dev/nvme0n1p3` (767M)：挂载在 `/boot`，存放系统启动核心文件的分区。
+
+内存虚拟盘（tmpfs / devtmpfs）：
+
+- `tmpfs 16G -> /tmp`：临时目录，其实是划了 16G 的内存当硬盘用，读写极快。
+- `tmpfs 16G -> /dev/shm`：共享内存，AI 训练（如 PyTorch 的 DataLoader `num_workers`）经常会用到它。
+- `tmpfs 6.2G -> /run`：存放系统运行时的临时状态文件
+
+应用镜像的临时挂载（Loop Device）：
+
+- `wechat-appimage.AppImage -> /tmp/.mount_wechatoMDhJP` (100% 已用)
+- **原理**：AppImage 是一种打包好、免安装的 Linux 软件格式。当你运行微信时，Linux 会把这个微信镜像文件**像插入 U 盘一样**，“挂载”到系统的临时目录里。因为它是一个只读的镜像包，所以显示 `Use% 100%`（已经写满了，不能再往里写东西）。
+
+```zsh
+❯ du -sh ~/.cache/* | sort -h
+......
+1.4G	/home/liyang/.cache/huggingface
+1.7G	/home/liyang/.cache/google-chrome
+3.5G	/home/liyang/.cache/goldendict
+4.4G	/home/liyang/.cache/JetBrains
+16G	/home/liyang/.cache/paru
+18G	/home/liyang/.cache/yay
+19G	/home/liyang/.cache/uv
+```
+
+对 `du -sh ~/.cache/*` 输出进行了顺序排序，并仅列举大小 >10G 的文件目录。
+
+# Debugging and Profiling
+
+## 学习目标
+
+- 使用条件断点 `breakpoint()` 和 `debug_print` 在训练过程中检查张量形状、数据类型和 NaN 值  
+- 使用 `cProfile`、`line_profiler` 和 `tracemalloc` 分析训练循环以查找性能瓶颈  
+- 检测常见的 AI 错误：形状不匹配、NaN 损失、数据泄露和张量设备错误（跨设备计算）  
+- 配置 TensorBoard 以可视化损失曲线、权重直方图和梯度分布
+
+## 概念
+
+AI 调试在三个层面上进行：
+
+1. 标准Python层次
+2. Tensor运算层面
+3. 训练时的动态过程
+
+```mermaid
+graph TD
+    L3["3\. Training Dynamics<br/>Loss curves, gradient norms, activations"] --> L2
+    L2["2\. Tensor Operations<br/>Shapes, dtypes, devices, NaN/Inf values"] --> L1
+    L1["1\. Standard Python<br/>Breakpoints, logging, profiling, memory"]
+```
+
+## Build It
+
+### Print Debugging
+
+对于张量代码来说，使用定向打印语句比单步调试更有效，因为你需要同时查看形状、数据类型和值范围。
+
+```python
+def debug_print(name, tensor):
+    print(f"{name}: shape={tensor.shape}, dtype={tensor.dtype}, "
+          f"device={tensor.device}, "
+          f"min={tensor.min().item():.4f}, max={tensor.max().item():.4f}, "
+          f"mean={tensor.mean().item():.4f}, "
+          f"has_nan={tensor.isnan().any().item()}")
+```
+
+### Python Debugger (pdb 和 breakpoint)
+
+不要小瞧了Python 内置调试器。在训练循环中插入 `breakpoint()` ，即可交互式地检查张量。
+
+```python
+def training_step(model, batch, criterion, optimizer):
+    inputs, labels = batch
+    outputs = model(inputs)
+    loss = criterion(outputs, labels)
+
+    if loss.item() > 100 or torch.isnan(loss):
+        breakpoint()
+
+    loss.backward()
+    optimizer.step()
+
+print("  Useful pdb commands once inside:")
+print("    p tensor.shape       # print shape")
+print("    p tensor.device      # check device")
+print("    p tensor.grad        # inspect gradients")
+print("    p tensor.isnan().sum()  # count NaNs")
+```
+
+进入调试器后的常用命令：
+
+- `p outputs.shape` 查看形状
+- `p loss.item()` 查看loss值
+- `p torch.isnan(outputs).sum()` 统计NaN个数
+- `p model.fc1.weight.grad` 检查梯度
+- `c` to continue, `q` to quit
+
+### Python Logging
+
+当调试工作不仅仅只是看一眼的程度，请将 print 语句替换为 logging 记录。
+
+```python
+import logging
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(message)s",
+    handlers=[
+        logging.FileHandler("training.log"),
+        logging.StreamHandler()
+    ]
+)
+logger = logging.getLogger(__name__)
+
+logger.info(f"Starting training: lr={lr:.4f}, batch_size={batch_size}")
+logger.warning(f"Loss spike detected: {loss.item:.4f} at step {step}")
+logger.error(f"NaN loss at step {step}, stopping")
+```
+
+日志记录可以提供时间戳、严重级别和文件输出信息。如果凌晨 3 点训练运行失败，你需要的是日志文件，而不是滚动到屏幕外的终端输出。
+
+### Timing Code Sections
+
+优化的第一步是，明确时间都用在哪里了。
+
+```python
+import time
+
+class Timer:
+    def __init__(self, name=""):
+        self.name = name
+
+    def __enter__(self):
+        self.start = time.perf_counter()
+        return self
+
+    def __exit__(self, *args):
+        elapsed = time.perf_counter() - self.start
+        print(f"[{self.name}] {elapsed:.4f}s")
+
+with Timer("data loading"):
+    batch = next(dataloader_iter)
+
+with Timer("forward pass"):
+    outputs = model(batch)
+
+with Timer("backward pass"):
+    loss.backward()
+```
+
+常见问题：数据加载占用了 60% 的训练时间。解决方法是在 DataLoader 中将 `num_workers > 0` ，而不是更换更快的 GPU。
+
+### cProfile and line_profiler
+
+当你需要比 timer 更强大的工具时：
+
+```python
+python -m cProfile -s cumtime train.py
+```
+
+这会显示了按累计时间排序的每次函数调用。要进行逐行性能分析：
+
+```zsh
+pip install line_profiler
+```
+
+```python
+@profile
+def train_step(model, data, target):
+    output = model(data)
+    loss = F.cross_entropy(output, target)
+    loss.backward()
+    return loss
+
+# Run with: kernprof -l -v train.py
+```
+
+### 内存Profiling
+
+使用 tracemalloc 查看 CPU 内存使用情况。
+
+```python
+import tracemalloc
+
+tracemalloc.start()
+
+# your code here
+model = build_model()
+data = load_dataset()
+
+snapshot = tracemalloc.take_snapshot()
+top_stats = snapshot.statistics("lineno")
+for stat in top_stats[:10]:
+    print(stat)
+```
+
+使用 memory_profiler 查看 GPU 内存使用情况。
+
+```python
+# pip install memory_profiler
+from memory_profiler import profile
+
+@profile
+def load_data():
+    raw = read_csv("data.csv")       # watch memory jump here
+    processed = preprocess(raw)       # and here
+    return processed
+```
+
+运行 `python -m memory_profiler your_script.py` 以查看逐行内存使用情况。
+
+使用 pytorch 查看 GPU 内存使用情况。
+
+```python
+import torch
+
+if torch.cuda.is_available():
+    print(torch.cuda.memory_summary())
+
+    print(f"Allocated: {torch.cuda.memory_allocated() / 1e9:.2f} GB")
+    print(f"Cached: {torch.cuda.memory_reserved() / 1e9:.2f} GB")
+```
+
+遇到OOM (Out of Memory) 时怎么办：
+
+1. 减小批次大小（Batch Size）（永远是第一件该尝试的事）  
+2. 使用 `torch.cuda.empty_cache()` 释放缓存的显存  
+3. 对大型中间张量使用 `del tensor`，随后紧跟 `torch.cuda.empty_cache()`  
+4. 使用混合精度（`torch.cuda.amp`）将显存占用减半  
+5. 对层数深的模型使用梯度检查点（Gradient Checkpointing）
+
+### 常见的 AI 漏洞及其捕获方法
+
+#### Shape Mismatch
+
+最常见的错误。张量的形状为 `[batch, features]` 而模型期望的形状为 `[batch, channels, height, width]` 。
+
+```python
+def check_shapes(model, sample_input):
+    print(f"Input: {sample_input.shape}")
+    hooks = []
+
+    def make_hook(name):
+        def hook(module, inp, out):
+            in_shape = inp[0].shape if isinstance(inp, tuple) else inp.shape
+            out_shape = out.shape if hasattr(out, "shape") else type(out)
+            print(f"  {name}: {in_shape} -> {out_shape}")
+        return hook
+
+	# model.named_modules() 会遍历网络里的每一个子层（如 conv1, layer1, fc 等）
+    for name, module in model.named_modules():
+		# 给每一个子层都装上刚刚定义好的监听器，并把监听器对象存进列表
+        hooks.append(module.register_forward_hook(make_hook(name)))
+
+    with torch.no_grad():
+        model(sample_input)  # 让测试数据在网络里跑一遍，此时每一层被触发，自动打印 shape
+
+	# 必须把安装的监听器卸载掉！否则以后每次训练模型，它都会继续打印，导致刷屏
+    for h in hooks:
+        h.remove()
+```
+
+使用 sample batchsize 运行一次此命令。它会映射模型中的每一种形状变换。
+
+```python
+def demo_shape_checking():
+    print("\n--- 4. Shape Checking Through Model ---")
+
+    model = nn.Sequential(
+        nn.Linear(784, 256),
+        nn.ReLU(),
+        nn.Linear(256, 64),
+        nn.ReLU(),
+        nn.Linear(64, 10),
+    )
+
+    sample = torch.randn(4, 784)
+    check_shapes(model, sample)
+```
+
+#### NaN Loss
+
+NaN loss 意味着某些东西崩溃了。常见原因：
+
+- 学习率过高  
+- 自定义损失函数中存在除零操作  
+- 对零或负数取对数  
+- RNN中的梯度爆炸
+
+```python
+def detect_nan(model, loss, step):
+    if torch.isnan(loss):
+        print(f"NaN loss at step {step}")
+        for name, param in model.named_parameters():
+            if param.grad is not None:
+                if torch.isnan(param.grad).any():
+                    print(f"  NaN gradient in {name}")
+                if torch.isinf(param.grad).any():
+                    print(f"  Inf gradient in {name}")
+        return True
+    return False
+```
+
+### Data Leakage
+
+你的模型在测试集上达到了 99%的准确率。听起来很棒。但这其实是个 bug。
+
+```python
+def check_data_leakage(train_set, test_set, id_column="id"):
+    train_ids = set(train_set[id_column].tolist())
+    test_ids = set(test_set[id_column].tolist())
+    overlap = train_ids & test_ids
+    if overlap:
+        print(f"DATA LEAKAGE: {len(overlap)} samples in both train and test")
+        return True
+    return False
+```
+
+### Wrong Device
+
+张量运行在不同的设备上（CPU 与 GPU）会导致运行时错误。但有时，某个张量会静默地停留在 CPU 上，而其他所有数据都在 GPU 上，导致训练速度缓慢。
+
+```python
+def check_devices(model, *tensors):
+    model_device = next(model.parameters()).device
+    print(f"Model device: {model_device}")
+    for i, t in enumerate(tensors):
+        if t.device != model_device:
+            print(f"  WARNING: tensor {i} on {t.device}, model on {model_device}")
+```
+
+### TensorBoard Basics
+
+TensorBoard 会显示训练过程中内部发生的情况。
+
+```python
+# pip install tensorboard
+from torch.utils.tensorboard import SummaryWriter
+
+writer = SummaryWriter("runs/experiment_1")
+
+for step in range(num_steps):
+    loss = train_step(model, batch)
+
+    writer.add_scalar("loss/train", loss.item(), step)
+    writer.add_scalar("lr", optimizer.param_groups[0]["lr"], step)
+
+    if step % 100 == 0:
+        for name, param in model.named_parameters():
+            writer.add_histogram(f"weights/{name}", param, step)
+            if param.grad is not None:
+                writer.add_histogram(f"grads/{name}", param.grad, step)
+
+writer.close()
+```
+
+启动 TensorBoard
+
+```zsh
+tensorboard --logdir=runs
+```
+
+从 TensorBoard 中能看出什么：
+
+- 损失函数不下降：学习率过低，或者模型架构存在问题  
+- 损失函数剧烈震荡：学习率过高  
+- 损失函数变为 NaN：数值不稳定（见上文 NaN 部分）  
+- 训练集损失下降，验证集损失上升：过拟合  
+- 权重直方图坍缩至零：梯度消失  
+- 梯度直方图爆炸：需要进行梯度裁剪
+
+### VS Code Debugger
+
+要进行交互式调试，请使用 `launch.json` 配置 VS Code：
+
+```json
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug Training",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "justMyCode": false
+        }
+    ]
+}
+```
+
+## Use It
+
+以下是能够捕获大多数 AI 错误的调试工作流：
+
+1. 在训练之前：使用 sample batch 运行 `check_shapes`。验证输入和输出维度是否符合预期。  
+2. 前 10 个步骤：对损失、输出和梯度使用 `debug_print`。确认没有出现 NaN 且数值处于合理范围内。  
+3. 训练过程中：记录损失、学习率和梯度范数（norms）。使用 TensorBoard 进行可视化。  
+4. 当出现问题时：在失败点处放置 `breakpoint()`。通过交互式方式检查张量。  
+5. 针对性能：计算 data loading、forward 与 backward 之间的时间比例。如果接近显存溢出（OOM），则分析内存占用。

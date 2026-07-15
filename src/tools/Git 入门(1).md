@@ -14,36 +14,40 @@ category:
 
 <!-- more -->
 
-# 1. 版本控制系统
+# 版本控制系统
 
 ## 本地版本控制系统
 
 人们很久以前就开发了许多种本地版本控制系统，大多都是采用某种简单的数据库来记录文件的历次更新差异。
 
-## 集中化的版本控制系统
+## CVCS
 
-如何让在不同系统上的开发者协同工作？ 集中化的版本控制系统（Centralized Version Control Systems，CVCS）应运而生。 这类系统，诸如 CVS、Subversion 以及 Perforce 等，都有一个单一的集中管理的服务器，保存所有文件的修订版本，而协同工作的人们都通过客户端连到这台服务器，取出最新的文件或者提交更新。 
+如何让在不同系统上的开发者协同工作？ 集中化的版本控制系统（Centralized Version Control Systems，CVCS）应运而生。 诸如 CVS、Subversion 以及 Perforce 等，都有一个单一的集中管理的服务器，保存所有文件的修订版本，而协同工作的人们都通过客户端连到这台服务器，取出最新的文件或者提交更新。 
+
+> 想起了共享云文档
 
 CVCS 显而易见的缺点是中央服务器的单点故障。 如果宕机一小时，那么在这一小时内，谁都无法提交更新，也就无法协同工作。 如果中心数据库所在的磁盘发生损坏，又没有做恰当备份，毫无疑问你将丢失所有数据，包括项目的整个变更历史，只剩下人们在各自机器上保留的单独快照。 本地版本控制系统也存在类似问题，只要整个项目的历史记录被保存在单一位置，就有丢失所有历史更新记录的风险。
 
-## 分布式版本控制系统
+## DVCS
 
-于是分布式版本控制系统（Distributed Version Control System，DVCS）面世了。 在这类系统中，像 Git、Mercurial 以及 Darcs 等，客户端并不只提取最新版本的文件快照， 而是把代码仓库完整地镜像下来，包括完整的历史记录。 这么一来，任何一处协同工作用的服务器发生故障，事后都可以用任何一个镜像出来的本地仓库恢复。 因为每一次的克隆操作，实际上都是一次对代码仓库的完整备份。
+分布式版本控制系统（Distributed Version Control System，DVCS）。 在这类系统中，像 Git、Mercurial 以及 Darcs 等，客户端并不只提取最新版本的文件快照， 而是把代码仓库完整地镜像下来，包括完整的历史记录。 这么一来，任何一处协同工作用的服务器发生故障，事后都可以用任何一个镜像出来的本地仓库恢复。 因为每一次的克隆操作，实际上都是一次对代码仓库的完整备份。
 
-Git 和其它版本控制系统（包括 Subversion 和近似工具）的主要差别在于 Git 对待数据的方式。 从概念上来说，其它大部分系统以文件变更列表的方式存储信息，这类系统（CVS、Subversion、Perforce 等等） 将它们存储的信息看作是一组基本文件和每个文件随时间逐步累积的差异 （它们通常称作 基于差异（delta-based） 的版本控制）。
+Git 和其它VCS的主要差别在于 Git 对待数据的方式——**直接记录快照，而非差异比较**。
+
+从概念上来说，其它大部分VCS以文件变更列表的方式存储信息，这类系统将它们存储的信息看作是一组基本文件和每个文件随时间逐步累积的差异 （它们通常称作 基于差异（delta-based） 的版本控制）。
 
 反之，Git 更像是把数据看作是对小型文件系统的一系列快照。 在 Git 中，每当你提交更新或保存项目状态时，它基本上就会对当时的全部文件创建一个快照并保存这个快照的索引。 为了效率，如果文件没有修改，Git 不再重新存储该文件，而是只保留一个链接指向之前存储的文件。 
 
 ## Git 特点
 
-- Git 近乎所有操作都是本地执行。因为在本地磁盘上就有项目的完整历史，所以大部分操作看起来瞬间完成
+- Git 近乎所有操作都是本地执行。因为在本地磁盘上就有项目的完整历史，所以**大部分操作看起来瞬间完成**
 - Git 保证完整性。Git 中所有的数据在存储前都计算校验和，然后以校验和来引用。 这意味着不可能在 Git 不知情时更改任何文件内容或目录内容
-- Git 数据库中保存的信息都是以文件内容的哈希值来索引，而不是文件名
-- Git 一般只添加数据。执行的 Git 操作，几乎只往 Git 数据库中添加数据。 你很难使用 Git 从数据库中删除数据，也就是说 Git 几乎不会执行任何可能导致文件不可恢复的操作。 同别的 VCS 一样，未提交更新时有可能丢失或弄乱修改的内容。但是一旦你提交快照到 Git 中， 就难以再丢失数据
+- Git 数据库中保存的信息都是以文件内容的哈希值来索引，而不是文件名git config --list
+- Git 只添加数据。Git 几乎不会执行任何可能导致文件不可恢复的操作。 同别的 VCS 一样，未提交更新时有可能丢失或弄乱修改的内容。但是一旦你提交快照到 Git 中， 就难以再丢失数据
 
-# 2. Git 设置
+# Git 设置
 
-## 配置文件
+## 检查配置信息
 
 Git 自带一个 `git config` 的工具来帮助设置控制 Git 外观和行为的配置变量。 这些变量存储在三个不同的位置：
 
@@ -51,17 +55,14 @@ Git 自带一个 `git config` 的工具来帮助设置控制 Git 外观和行�
 2. `~/.gitconfig` 或 `~/.config/git/config` 只针对当前用户。 可以传递 `--global` 选项让 Git 读写此文件，这会对你系统上所有的仓库生效。
 3. 当前使用仓库的 Git 目录中的 config 文件（即 `.git/config`）：针对该仓库。可以传递 `--local` 选项让 Git 强制读写此文件，虽然默认情况下用的就是它。
 
-可以使用 `git config --list` 命令来列出所有 Git 当时能找到的配置。
+`git config --list` 列出 Git 所有能找到的配置。
 
 ```zsh
 ❯ git config --list
-user.email=pluinyiasnhg@gmail.com
 user.name=pluinyiasnhg
+user.email=pluinyiasnhg@gmail.com
 core.editor=vim
-core.quotepath=false
-http.https://github.com.proxy=http://127.0.0.1:7890
-https.https://github.com.proxy=https://127.0.0.1:7890
-credential.helper=store
+credential.helper=/usr/lib/git-core/git-credential-libsecret
 ```
 
 由于 Git 会从多个文件中读取同一配置变量的不同值，因此你可能会在其中看到意料之外的值而不知道为什么。 此时，可以查询 Git 中该变量的原始值，它会显示哪一个配置文件最后设置了该值：`git config --show-origin <配置变量>`。
@@ -79,7 +80,7 @@ git config --global user.email johndoe@example.com
 
 ## 默认编辑器
 
-配置默认文本编辑器，当 Git 需要你输入信息时会调用它。 如果未配置，Git 会使用操作系统默认的文本编辑器。以 Emacs 为例：
+配置默认文本编辑器，当 Git 需要你输入信息时会调用它。 
 
 ```zsh
 git config --global core.editor emacs
@@ -110,25 +111,29 @@ git reset HEAD -- fileA
 
 ## 获取帮助
 
-以 git config 为例：
+若你使用 Git 时需要获取帮助，有三种等价的方法可以找到 Git 命令的综合手册（manpage）：
 
 ```zsh
-git help config
-git config --help
-man git-config
+git help <verb>
+git <verb> --help
+man git-<verb>
 ```
 
-#  3. Git 本地命令
+此外，如果你不需要全面的手册，只需要可用选项的快速参考，那么可以用 `-h` 选项获得更简明的输出：
 
-git init 初始化本地库。创建后，当前目录出现一个 `.git` 文件夹。
-`git reflog` 查看历史版本。
-`git reset --hard` 切换版本。
+```zsh
+git <verb> -h
+```
+
+#  Git 本地命令
 
 Git 有三种状态：已修改、已暂存和已提交。
 
-- 已修改表示修改了文件，但还没保存到数据库中。
-- 已暂存表示对一个已修改文件的当前版本做了标记，使之包含在下次提交的快照中。
-- 已提交表示数据已经安全地保存在本地数据库中。
+- 已修改，表示修改了文件，但还没保存到数据库中。
+- 已暂存，表示对一个已修改文件的当前版本做了标记，使之包含在下次提交的快照中。
+- 已提交，表示数据已保存到本地数据库中。
+
+![文件的状态变化周期](https://vip.123pan.cn/1844935313/obsidian/20250303120945551.png)
 
 Git 工作流程：
 
@@ -136,16 +141,36 @@ Git 工作流程：
 2. 将想要下次提交的更改选择性地暂存，这样只会将更改的部分添加到暂存区。
 3. 提交更新，找到暂存区的文件，将快照永久性存储到 Git 目录。
 
-一般我们总会有些文件无需纳入 Git 的管理，也不希望它们总出现在未跟踪文件列表。 通常都是些自动生成的文件，比如日志文件，或者编译过程中创建的临时文件等。 在这种情况下，可以创建一个名为 .gitignore 的文件，列出要忽略的文件的模式。
+一般我们总会有些文件无需纳入 Git 的管理，也不希望它们总出现在未跟踪文件列表。 通常都是些自动生成的文件，比如日志文件，或者编译过程中创建的临时文件等。 在这种情况下，可以创建一个名为 `.gitignore` 的文件，列出要忽略的文件的模式。
 
 GitHub 有一个十分详细的针对数十种项目及语言的 .gitignore 文件列表， 可以在 https://github.com/github/gitignore 找到它。
 
-![image.png](https://vip.123pan.cn/1844935313/obsidian/20250303120945551.png)
+一个 .gitignore 文件的例子：
+
+```
+# 忽略所有的 .a 文件
+*.a
+
+# 但跟踪所有的 lib.a，即便你在前面忽略了 .a 文件
+!lib.a
+
+# 只忽略当前目录下的 TODO 文件，而不忽略 subdir/TODO
+/TODO
+
+# 忽略任何目录下名为 build 的文件夹
+build/
+
+# 忽略 doc/notes.txt，但不忽略 doc/server/arch.txt
+doc/*.txt
+
+# 忽略 doc/ 目录及其所有子目录下的 .pdf 文件
+doc/**/*.pdf
+```
 
 - `git init` 创建本地仓库
 - `git clone` 克隆远程仓库
 - `git status` 查看文件状态
-- `git add` 跟踪文件或目录下的所有文件
+- `git add` 精确地将内容添加到下一次提交中
 - `git diff` 通过文件补丁的格式更加具体地显示哪些行发生改变
 - `git commit` 创建节点，提交更新
 - `git reset` 本地仓库撤销节点。远程仓库撤销节点是 `git revert`
@@ -156,9 +181,31 @@ GitHub 有一个十分详细的针对数十种项目及语言的 .gitignore 文�
 - 远程仓库：`git remote`、`git fetch`、`git pull`、`git push`
 - `git tag` 打标签
 
+`git reflog` 查看历史版本。
+`git reset --hard` 切换版本。
+
 ### git clone
 
 克隆远程仓库的时候，可以自定义本地仓库的名字，如 `git clone https://github.com/libgit2/libgit2 mylibgit`，仓库所在目录名变为了 mylibgit。
+
+### git status
+
+ git status 有一个选项 `-s` 或 `--short` 可以帮你缩短状态命令的输出，这样可以以简洁的方式查看更改。 
+
+```zsh
+$ git status -s
+ M README
+MM Rakefile
+A  lib/git.rb
+M  lib/simplegit.rb
+?? LICENSE.txt
+```
+
+输出中有两栏，左栏指明了暂存区的状态，右栏指明了工作区的状态。
+
+新添加的未跟踪文件前面有 ?? 标记，新添加到暂存区中的文件前面有 A 标记，修改过的文件前面有 M 标记。
+
+例如，上面的状态报告显示： README 文件在工作区已修改但尚未暂存，而 lib/simplegit.rb 文件已修改且已暂存。 Rakefile 文件已修改，暂存后又作了修改。
 
 ### git add
 
@@ -166,19 +213,107 @@ GitHub 有一个十分详细的针对数十种项目及语言的 .gitignore 文�
 
 ### git diff
 
-`git diff --staged` 命令查看已暂存的将要添加到下次提交里的内容。 这条命令将比对已暂存文件与最后一次提交的文件差异。
+`git diff` 命令比较的是工作目录中当前文件和暂存区域快照之间的差异。 也就是修改之后还没有暂存起来的变化内容。
 
-注意，git diff 本身只显示尚未暂存的改动，而不是自上次提交以来所做的所有改动。 所以有时候你一下子暂存了所有更新过的文件，运行 git diff 后却什么也没有，就是这个原因。
+```
+❯ git status
+On branch master
+Changes to be committed:
+  (use "git restore --staged <file>..." to unstage)
+	modified:   README
+
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	modified:   CONTRIBUTING.md
+
+❯ git diff
+diff --git a/CONTRIBUTING.md b/CONTRIBUTING.md
+index ba6cbf7..56a54fd 100644
+--- a/CONTRIBUTING.md
++++ b/CONTRIBUTING.md
+@@ -1 +1,2 @@
+ You and I
++You and I
+```
+
+若要查看已暂存的将要添加到下次提交里的内容，可以用 `git diff --staged` 命令。 这条命令将比对已暂存文件与最后一次提交的文件差异：
+
+```
+❯ git diff --staged
+diff --git a/README b/README
+index 072be97..34d4183 100644
+--- a/README
++++ b/README
+@@ -1,2 +1,3 @@
+ My Project
+ My Project
++My Project
+```
 
 ### git commit
 
-`git commit` 提交时记录的是放在暂存区域的快照。 任何还未暂存文件的仍然保持已修改状态，可以在下次提交时纳入版本管理。 每一次运行提交操作，都是对项目作一次快照，以后可以回到这个状态，或者进行比较。
+`git commit` 启动你选择的文本编辑器来输入提交说明。
 
-Git 提供了一个跳过使用暂存区域的方式， 只要在提交的时候，使用 `git commit -a`，Git 就会自动把所有已经跟踪过的文件暂存起来一并提交，从而跳过 git add 步骤。
+```
+❯ git commit
+<光标所在处>
+# Please enter the commit message for your changes. Lines starting
+# with '#' will be ignored, and an empty message aborts the commit.
+#
+# On branch master
+# Changes to be committed:
+#	modified:   CONTRIBUTING.md
+#	modified:   README
+#
+```
+
+更详细的内容修改提示可以用 `-v` 选项查看，这会将你所作的更改的 diff 输出呈现在编辑器，以便让你知道本次提交具体作出哪些修改。
+
+```
+❯ git commit -v
+<光标所在处>
+# Please enter the commit message for your changes. Lines starting
+# with '#' will be ignored, and an empty message aborts the commit.
+#
+# On branch master
+# Changes to be committed:
+#	modified:   CONTRIBUTING.md
+#	modified:   README
+#
+# ------------------------ >8 ------------------------
+# Do not modify or remove the line above.
+# Everything below it will be ignored.
+diff --git a/CONTRIBUTING.md b/CONTRIBUTING.md
+index ba6cbf7..56a54fd 100644
+--- a/CONTRIBUTING.md
++++ b/CONTRIBUTING.md
+@@ -1 +1,2 @@
+ You and I
++You and I
+diff --git a/README b/README
+index 072be97..34d4183 100644
+--- a/README
++++ b/README
+@@ -1,2 +1,3 @@
+ My Project
+ My Project
++My Project
+```
+
+也可以在 `git commit -m` ，将提交信息与命令放在同一行
+
+```
+❯ git commit -m "test: git commit"
+[master 2cf5d25] test: git commit
+ 2 files changed, 2 insertions(+)
+```
+
+跳过使用暂存区域。`git commit -a` 会自动把所有已经跟踪过的文件暂存起来一并提交，从而跳过 git add 步骤。
 
 ### git rm
 
-`git rm` 命令用于移除文件，并连带从工作目录中删除指定的文件，这样以后就不会出现在未跟踪文件清单中了。下一次提交时，该文件就不再纳入版本管理了。 
+`git rm` 命令用于**移除文件**，并连带从工作目录中删除指定的文件，这样以后就不会出现在未跟踪文件清单中了。下一次提交时，该文件就不再纳入版本管理了。 
 
 要删除之前修改过或已经放到暂存区的文件，则必须使用强制删除选项 `-f`（force 的首字母）。 这是一种安全特性，用于防止误删尚未添加到快照的数据。
 
@@ -369,7 +504,6 @@ git checkout <branch>~<number>
 	- `git push <remote> <source>` 比如，将 fool 分支推送到 origin，前提是本地有 origin/fool
 	- `git push <remote> <source>:<destination>` 去除了 “前提是本地有...”的条件
 
-
 > [!info] 
 > `git pull` 是 fetch 和 merge 的缩写
 > `git pull --rebase` 是 fetch 和 rebase 的缩写
@@ -438,3 +572,126 @@ git push
 - 网页小游戏学 git [Learn Git Branching](https://learngitbranching.js.org/?locale=zh_CN)
 - https://wyag.thb.lt/
 - [Git 命令列表](https://git-scm.com/docs)。
+
+
+
+Git 分支
+
+Figure 1. 首次提交对象及其树结构
+
+Figure 3. 分支及其提交历史
+
+Figure 13. 基于 master 分支的紧急问题分支 hotfix branch
+
+Figure 17. 一个合并提交
+
+Figure 16. 一次典型合并中所用到的三个快照
+想法:合并前，head 在master上，合并后，master向前
+
+Figure 22. 克隆之后的服务器与本地仓库
+
+分支简介
+
+把当前版本的文件快照保存到 Git 仓库中 （Git 使用 blob 对象来保存它们）
+
+当使用 git commit 进行提交操作时，Git 会先计算每一个子目录（本例中只有项目根目录）的校验和， 然后在 Git 仓库中这些校验和保存为树对象。随后，Git 便会创建一个提交对象， 它除了包含上面提到的那些信息外，还包含指向这个树对象（项目根目录）的指针。
+
+Git 仓库中有五个对象：三个 blob 对象（保存着文件快照）、一个 树 对象 （记录着目录结构和 blob 对象索引）以及一个 提交 对象（包含着指向前述树对象的指针和所有提交信息）。
+
+Git 的分支，其实本质上仅仅是指向提交对象的可变指针。 Git 的默认分支名字是 master。 在多次提交操作之后，你其实已经有一个指向最后那个提交对象的 master 分支。 master 分支会在每次提交时自动向前移动。
+
+分支创建
+
+Git 是怎么创建新分支的呢？ 很简单，它只是为你创建了一个可以移动的新的指针。 比如，创建一个 testing 分支， 你需要使用 git branch 命令：$ git branch testing
+
+Git 又是怎么知道当前在哪一个分支上呢？ 也很简单，它有一个名为 HEAD 的特殊指针。 请注意它和许多其它版本控制系统（如 Subversion 或 CVS）里的 HEAD 概念完全不同。 在 Git 中，它是一个指针，指向当前所在的本地分支（译注：将 HEAD 想象为当前分支的别名）。
+
+你可以简单地使用 git log 命令查看各个分支当前所指的对象。 提供这一功能的参数是 --decorate。$ git log --oneline --decorate
+
+分支切换
+
+要切换到一个已存在的分支，你需要使用 git checkout 命令。 我们现在切换到新创建的 testing 分支去：$ git checkout testing
+这样 HEAD 就指向 testing 分支了。
+
+使用 git log 命令查看分叉历史。 运行 git log --oneline --decorate --graph --all ，它会输出你的提交历史、各个分支的指向以及项目的分支分叉情况。
+
+由于 Git 的分支实质上仅是包含所指对象校验和（长度为 40 的 SHA-1 值字符串）的文件，所以它的创建和销毁都异常高效。 创建一个新分支就相当于往一个文件中写入 41 个字节（40 个字符和 1 个换行符），如此的简单能不快吗？
+这与过去大多数版本控制系统形成了鲜明的对比，它们在创建分支时，将所有的项目文件都复制一遍，并保存到一个特定的目录。
+
+创建新分支的同时切换过去
+通常我们会在创建一个新分支后立即切换过去，这可以用 git checkout -b <newbranchname> 一条命令搞定。
+
+新建分支
+
+它是下面两条命令的简写：$ git branch iss53
+$ git checkout iss53
+
+但是，在你这么做之前，要留意你的工作目录和暂存区里那些还没有被提交的修改， 它可能会和你即将检出的分支产生冲突从而阻止 Git 切换到该分支。 最好的方法是，在你切换分支之前，保持好一个干净的状态。 有一些方法可以绕过这个问题（即，贮藏（stashing） 和 修补提交（commit amending））， 我们会在 贮藏与清理 中看到关于这两个命令的介绍。 现在，我们假设你已经把你的修改全部提交了，这时你可以切换回 master 分支了：
+想法:切换分支前，把暂存区的内容保存为快照。防丢失和冲突。
+
+后将 hotfix 分支合并回你的 master 分支来部署到线上。 你可以使用 git merge 命令来达到上述目的：$ git checkout master
+$ git merge hotfix
+
+当你试图合并两个分支时， 如果顺着一个分支走下去能够到达另一个分支，那么 Git 在合并两者的时候， 只会简单的将指针向前推进（指针右移），因为这种情况下的合并操作没有需要解决的分歧——这就叫做 “快进（fast-forward）”。
+
+可以使用带 -d 选项的 git branch 命令来删除分支：$ git branch -d hotfix
+想法:删除分支类似删除指针，删除一个对节点的引用
+
+可以使用 git merge master 命令将 master分支合并入 iss53 分支，或者你也可以等到 iss53 分支完成其使命，再将其合并回 master 分支。
+
+分支的合并
+
+master 分支所在提交并不是 iss53 分支所在提交的直接祖先，Git 不得不做一些额外的工作。 出现这种情况的时候，Git 会使用两个分支的末端所指的快照（C4 和 C5）以及这两个分支的公共祖先（C2），做一个简单的三方合并。
+想法:此时无法用 fast forward
+
+和之前将分支指针向前推进所不同的是，Git 将此次三方合并的结果做了一个新的快照并且自动创建一个新的提交指向它。 这个被称作一次合并提交，
+
+既然你的修改已经合并进来了，就不再需要 iss53 分支了。 现在你可以在任务追踪系统中关闭此项任务，并删除这个分支。$ git branch -d iss53
+
+遇到冲突时的分支合并
+
+合并冲突后的任意时刻使用 git status 命令来查看那些因包含合并冲突而处于未合并（unmerged）状
+
+Git 会在有冲突的文件中加入标准的冲突解决标记，这样你可以打开这些包含冲突的文件然后手动解决冲突。 出现冲突的文件会包含一些特殊区段，看起来像下面这个样子：<<<<<<< HEAD:index.html
+<div id="footer">contact : email.support@github.com</div>
+=======
+<div id="footer">
+ please contact us at support@github.com
+</div>
+>>>>>>> iss53:index.html
+
+上述的冲突解决方案仅保留了其中一个分支的修改，并且 <<<<<<< , ======= , 和 >>>>>>> 这些行被完全删除了。 在你解决了所有文件里的冲突之后，对每个文件使用 git add 命令来将其标记为冲突已解决。 一旦暂存这些原本有冲突的文件，Git 就会将它们标记为冲突已解决。
+如果你想使用图形化工具来解决冲突，你可以运行 git mergetool，该命令会为你启动一个合适的可视化合并工具，并带领你一步一步解决这些冲突：
+
+等你退出合并工具之后，Git 会询问刚才的合并是否成功。 如果你回答是，Git 会暂存那些文件以表明冲突已解决： 你可以再次运行 git status 来确认所有的合并冲突都已被解决：
+
+分支管理
+
+git branch 命令不只是可以创建与删除分支。 如果不加任何参数运行它，会得到当前所有分支的一个列表：
+
+如果需要查看每一个分支的最后一次提交，可以运行 git branch -v 命令：
+
+--merged 与 --no-merged 这两个有用的选项可以过滤这个列表中已经合并或尚未合并到当前分支的分支。 如果要查看哪些分支已经合并到当前分支，可以运行 git branch --merged：$ git branch --merged
+  iss53
+* master
+因为之前已经合并了 iss53 分支，所以现在看到它在列表中。 在这个列表中分支名字前没有 * 号的分支通常可以使用 git branch -d 删除掉；你已经将它们的工作整合到了另一个分支，所以并不会失去任何东西。
+查看所有包含未合并工作的分支，可以运行 git branch --no-merged：$ git branch --no-merged
+  testing
+这里显示了其他分支。 因为它包含了还未合并的工作，尝试使用 git branch -d 命令删除它时会失败：
+
+如果真的想要删除分支并丢掉那些工作，如同帮助信息里所指出的，可以使用 -D 选项强制删除它。
+
+上面描述的选项 --merged 和 --no-merged 会在没有给定提交或分支名作为参数时， 分别列出已合并或未合并到 当前 分支的分支。
+
+主题分支
+
+主题分支对任何规模的项目都适用。 主题分支是一种短期分支，它被用来实现单一特性或其相关工作。
+
+你在上一节用到的主题分支（iss53 和 hotfix 分支）中提交了一些更新，并且在它们合并入主干分支之后，你又删除了它们。 这项技术能使你快速并且完整地进行上下文切换（context-switch）
+
+远程分支
+
+远程跟踪分支是远程分支状态的引用。它们是你无法移动的本地引用。一旦你进行了网络通信， Git 就会为你移动它们以精确反映远程仓库的状态。请将它们看做书签， 这样可以提醒你该分支在远程仓库中的位置就是你最后一次连接到它们的位置。
+它们以 <remote>/<branch> 的形式命名。 例如，如果你想要看你最后一次与远程仓库 origin 通信时 master 分支的状态，你可以查看 origin/master 分支。 你与同事合作解决一个问题并且他们推送了一个 iss53 分支，你可能有自己的本地 iss53 分支， 然而在服务器上的分支会以 origin/iss53 来表示。
+
+远程仓库名字 “origin” 与分支名字 “master” 一样，在 Git 中并没有任何特别的含义一样。 同时 “master” 是当你运行 git init 时默认的起始分支名字，原因仅仅是它的广泛使用， “origin” 是当你运行 git clone 时默认的远程仓库名字。 如果你运行 git clone -o booyah，那么你默认的远程分支名字将会是 booyah/master。

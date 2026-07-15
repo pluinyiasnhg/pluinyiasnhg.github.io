@@ -20,7 +20,7 @@ category:
 
 > 说明：
 > 之前的u盘找不到了，想起本科毕业时学院送的8G u盘，想不到还能派上用场。
-> Ventoy使用很简单，在本地打开Ventoy,在u盘内部安装Ventoy，将下载下来的iso文件拖入u盘根目录。
+> Ventoy使用很简单，在本地打开Ventoy，在u盘内部安装Ventoy，将下载下来的iso文件拖入u盘根目录。
 > arch linux 镜像下载：官网推荐用BitTorrent下载，我用motrix作为下载器。
 
 选择U盘启动，在 ventoy 菜单选择arch linux 的iso镜像，接下来都是确认键，直到进入 tty1。
@@ -29,7 +29,7 @@ category:
 - 重启电脑，按 F12 进入联想thinkbook的启动菜单，选择U盘启动
 - 进入Ventoy应用界面，选择arch linux镜像，选择boot in noraml mode,选择Arch Linux install medium (x86_64, UEFI)，然后开始安装，安装完毕，显示蓝色的Welcome to arch，并已经以 root 身份登录。
 
-arch linux安装完毕，此时u盘还不可以取下，u盘作为一个临时的arch linux系统。面前的终端，文档里称之为virtual console，它的shell prompt是zsh，有命令补全功能。
+arch linux安装完毕，此时u盘还不可以取下，u盘作为一个临时的arch linux系统。面前的终端，文档里称之为virtual console，它的shell prompt是 zsh，有命令补全功能。
 
 ###  连接wifi
 
@@ -126,6 +126,18 @@ UUID=YOUR-UUID-HERE /mnt/steam ext4 defaults 0 2
 
 更新系统时间：systemd-timesyncd服务，默认会同步时间，使用 `timedatectl` 查看时间是否同步。
 
+你是 Arch + Windows 双系统的话，重点检查这个
+
+Linux 通常把硬件时钟当 **UTC**，Windows 默认把硬件时钟当 **本地时间**。两边轮流启动后，Windows 就可能稳定地差 8 小时。
+
+建议统一让 Windows 也按 UTC 读硬件时钟。管理员 PowerShell：
+
+```
+reg add "HKLM\SYSTEM\CurrentControlSet\Control\TimeZoneInformation" /v RealTimeIsUniversal /t REG_DWORD /d 1 /f
+```
+
+然后重启 Windows，并重新同步一次时间。
+
 ```bash
 # 生成 fstab（文件系统表）文件
 genfstab -U /mnt >> /mnt/etc/fstab
@@ -157,18 +169,24 @@ passwd
 
 # 启动网络和蓝牙服务
 systemctl enable NetworkManager bluetooth
+```
 
+### 创建普通用户
+
+```zsh
 # 添加普通用户
 useradd -m liyang # 这里，虽然没有创建liyang group,但arch linux在创建新用户时会自动创建group。
 # 设置用户密码 
 passwd liyang
 # 普通用户添加sudo权限 
-export EDITOR=vim # 暂时启用vim作为编辑器
+export EDITOR=vim # 暂时启用vim作为编辑器
 visudo  # 编辑 sudoers，取消 wheel 组的注释 `%wheel ALL=(ALL:ALL) ALL` 。
 # wheel 组在 Unix/Linux 系统中传统上是特权组，wheel 组成员可以执行 su 命令切换到 root。
 # 将用户添加到 wheel 组
 usermod -aG wheel liyang
+```
 
+```zsh
 # GRUB 安装
 #GRUB is the boot loader while efibootmgr is used by the GRUB installation script to write boot entries to NVRAM.
 # os-prober 自动检测其他操作系统（Windows/Linux），用于GRUB多系统引导配置
@@ -218,22 +236,6 @@ systemctl enable sddm
 
 重启电脑：使用 exit 退出chroot环境，使用 reboot 重启机器，并取下u盘。
 
-我安装了gnome后，又卸载了一批gnome组件：
-
-```bash
-# decibels声音播放器
-# epiphany浏览器
-# gnome-software，与 Discover 重复
-# gnome-system-monitor，与 System Monitor 重复
-# loupe查看图像 
-# malcontent家长模式 
-# orca 无障碍阅读 
-# showtime视频播放器 
-# simple-scan打印 
-# snapshot照相机 
-pacman -Rns gnome-calculator gnome-calendar decibels epiphany gnome-characters gnome-clocks gnome-connections gnome-contacts gnome-disk-utility gnome-maps  gnome-music gnome-software gnome-system-monitor gnome-text-editor gnome-tour gnome-weather loupe malcontent orca showtime simple-scan snapshot 
-```
-
 其他软件安装，主要来自 [archwiki安装指南](https://wiki.archlinux.org/title/Installation_guide) ：
 
 ```bash
@@ -276,6 +278,13 @@ pacman -S dialog wireless_tools wpa_supplicant mtools dosfstools linux-he
 
 - [niri](https://github.com/niri-wm/niri)+[DMS](https://github.com/AvengeMedia/DankMaterialShell)
 
+niri 安装
+
+```zsh
+sudo pacman -Syu niri xwayland-satellite xdg-desktop-portal-gnome xdg-desktop-portal-gtk alacritty dms-shell-niri matugen cava qt6-multimedia-ffmpeg
+systemctl --user add-wants niri.service dms
+```
+
 # 取下U盘后
 
 连接网络：输入nmtui，其他和平时手机联网差不多。nm 大概是 NetworkManager 的缩写。之后每次重启电脑，无线网络会自动连接。
@@ -293,7 +302,7 @@ makepkg -si # 这一步时候没法下载github上的yay.tar.gz，于是先用
 - [x] 上网 V2rayN
 
 ```zsh
-yay -S v2rayn-bin
+paru -S v2rayn-bin
 ```
 
 简单设置下v2rayN：右上方设置中文界面，设置开机自启、启动后隐藏窗口、关闭窗口时隐藏托盘。
@@ -573,7 +582,9 @@ patch:
 
 ```zsh
 yay -S wechat-appimage linuxqq 
-paru -S wemeet-bin
+
+# paru -S wemeet-bin
+flatpak install flathub com.tencent.wemeet
 ```
 
 微信频繁出现“运行一段时间就会崩溃”的问题（还是会崩溃）：
@@ -817,11 +828,23 @@ sudo pacman -S emacs
 git clone --depth=1 https://github.com/syl20bnr/spacemacs ~/.emacs.d
 ```
 
+### Konsole
+
+打开「 Settings - Edit Current Profile...」，
+
+- 去除左右两侧的滚动条
+Scrollbar position 选择 Hidden
+Highlighting 不勾选 Highlight the lines coming into view
+
+- 主题选择 Sweet 主题下的 Sweet-Amber-Blue
+
 ### zsh
 
 [zsh 安装与配置，使用 oh-my-zsh 美化终端](https://www.haoyep.com/posts/zsh-config-oh-my-zsh/#%E5%8D%B8%E8%BD%BD-oh-my-zsh)
 
 ```bash
+sudo pacman -S zsh
+
 # 设置默认终端为 zsh
 chsh -s /bin/zsh
 
@@ -833,7 +856,7 @@ sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/too
 git clone --depth=1 https://github.com/romkatv/powerlevel10k.git ${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/themes/powerlevel10k
 ```
 
-on-my-zsh 会覆盖掉之前的 ~/.zshrc 文件，新的 .zshrc 文件中有不少内容，可供设置：
+on-my-zsh 会覆盖掉之前的 `~/.zshrc` 文件，新的 .zshrc 文件中有不少内容，可供设置：
 
 ```txt
 # 设置zsh主题为 powerlevel10k
@@ -1000,7 +1023,7 @@ julia
 
 ### git
 
-![[Git 入门(1)#2. Git 设置]]
+![[Git 入门(1)#Git 设置]]
 
 ### gist
 
@@ -1177,6 +1200,17 @@ yay -S typora-free-cn
 
 Typora 主题的存放位置在 `~/.config/Typora/themes/` 。
 
+### latex
+
+- [ ] latex
+
+```zsh
+# 安装完整的 TeX Live 及其常用组件
+sudo pacman -S texlive-meta
+# 安装中文字体支持（可选）
+sudo pacman -S texlive-langchinese
+```
+
 - [x] xmind
 
 ```zsh
@@ -1270,7 +1304,7 @@ sudo pacman -S kdenlive
 
 ## 音乐相关
 
-- [x] 「酷狗音乐概念版」的第三方桌面客户端 [MoeKoe Music](https://github.com/MoeKoeMusic/MoeKoeMusic)
+- [x] 「酷狗音乐概念版」第三方桌面客户端 [MoeKoe Music](https://github.com/MoeKoeMusic/MoeKoeMusic)
 
 ```zsh
 paru -S moekoemusic-bin
@@ -1313,6 +1347,16 @@ sudo pacman -S gamescope
 
 ```txt
 gamescope -W 2560 -H 1600 -r 60 -- %command%
+```
+
+> [!info] Steam搜索框中无法切换中文输入法
+> 用指定区域语言的环境变量启动 Steam。在终端输入：`LANG=zh_CN.UTF-8 steam` 。
+
+```zsh
+# 修改用户级快捷方式
+cp /usr/share/applications/steam.desktop ~/.local/share/applications/
+vim ~/.local/share/applications/steam.desktop
+# 修改为 Exec=env LANG=zh_CN.UTF-8 /usr/bin/steam %U
 ```
 
 - [x] wine
@@ -1410,6 +1454,26 @@ systemctl --user enable sunshine
 
 > 连接以后，如果笔记本正在播放音频，那么手机会代替笔记本播放音频。
 
+### Unity
+
+```zsh
+paru -S unityhub
+```
+
+Unity Hub 每次打开都要重新登录。Unity Hub 的登录凭证（Token）是通过其内置的 Electron 框架来管理的，它默认会去调用系统的**密钥环（Keyring）机制**来加密和储存你的密码。
+
+解决方法：强制 Unity Hub 使用普通文本存储密码。
+
+```zsh
+# 测试是否有效
+unityhub --password-store="basic"
+
+# 若有效，则修改桌面启动文件
+cp /usr/share/applications/unityhub.desktop ~/.local/share/applications/
+vim ~/.local/share/applications/unityhub.desktop
+# 修改成 Exec=/usr/bin/unityhub --password-store="basic" %U
+```
+
 - RetroArch
 - MangoHud：在萤幕上显示显示CPU、GPU、FPS计数器、温度、频率，並有统计FPS报表的功能。（没用过）
 
@@ -1439,15 +1503,38 @@ yay -S deepin-wine-quarkclouddrive
 
 ## 容器与虚拟化
 
+### Docker
+
 - [x] Docker + Docker Desktop
 
 ```zsh
-sudo pacman -S docker
+sudo pacman -S docker 
 paru -S docker-desktop
 
 # 容器中使用宿主机的 nvidia显卡
 sudo pacman -S nvidia-container-toolkit
 ```
+
+docker 开机自启：
+
+```zsh
+sudo systemctl enable docker.service
+sudo systemctl enable containerd.service
+```
+
+```zsh
+# 有 default 和 desktop-linux
+docker context ls
+# 切换到 default
+docker context use default
+# 切换到 desktop-linux
+docker context use desktop-linux
+```
+
+| NAME              | DESCRIPTION                             | DOCKER ENDPOINT                                   | ERROR |
+| ----------------- | --------------------------------------- | ------------------------------------------------- | ----- |
+| **default ***     | Current DOCKER_HOST based configuration | `unix:///var/run/docker.sock`                     |       |
+| **desktop-linux** | Docker Desktop                          | `unix:///home/liyang/.docker/desktop/docker.sock` |       |
 
 设置 Docker Desktop 代理：进入「Settings - Resources - Proxies - Docker Desktop proxy」，选择 Manual configuration。接下来填写三个地址:
 
@@ -1467,12 +1554,15 @@ localhost, 127.0.0.1
 Docker Desktop 登录后总是注销，影响我在命令行使用 Docker 下载镜像。遂将登录授权从 Desktop 转移到 secretservice 。
 
 ```zsh
+sudo pacman -S gnome-keyring
 paru -S docker-credential-secretservice-bin
 ```
 
 接着，打开 `~/.docker/config.json` ，将 `"credsStore": "desktop"` 修改为 `"credsStore": "secretservice"`。然后在终端重新执行登录 `docker login` 。
 
-- [x] QEMU/KVM + VirtManger 
+### VirtManager
+
+- [x] QEMU/KVM + VirtManager 
 
 ```zsh
 # 检查CPU是否支援虚拟化，回传值不应为0。
@@ -1552,6 +1642,19 @@ sudo umount /mnt
 sudo qemu-nbd --disconnect /dev/nbd0
 ```
 
+### WinBoat
+
+[项目地址](https://github.com/TibixDev/winboat)
+
+```zsh
+paru -S winboat-bin
+```
+
+注意事项：
+
+- WinBoat 暂时无法通过 Docker Desktop 安装
+- WinBoat 安装前，最好自备Win11镜像文件
+
 ## 实用工具
 
 ### 记忆卡片 Anki
@@ -1624,6 +1727,14 @@ paru -S mrrss-appimage
 
 - 开启「Obsidian 集成」。这里的仓库名称和仓库路径，都是 Ob 笔记仓库存放 RSS 订阅文章所在的目录，而不是笔记仓库的目录。
 - 开启「RSSHub 集成」。可以自建RSSHub服务，也可以从[官方文档](https://docs.rsshub.app/zh/guide/instances)中找公开的 RSSHub 服务。
+
+### 番茄钟 Pomotroid
+
+[项目地址](https://github.com/Splode/pomotroid)
+
+```zsh
+paru -S pomotroid-bin
+```
 
 
 
@@ -1739,15 +1850,6 @@ NVIDIA-SMI has failed because it couldn't communicate with the NVIDIA driver. Ma
 
 执行下面命令后，如果没有显示 `Kernel driver in use` 行，那么就从三个备选内核模块 nouveau, nvidia_drm, nvidia 中启用 `nvidia`。
 
-```zsh
-❯ lspci -k | grep -A 2 -i "NVIDIA"
-02:00.0 VGA compatible controller: NVIDIA Corporation AD104 [GeForce RTX 4070] (rev a1)
-	Subsystem: NVIDIA Corporation Device 1875
-	Kernel driver in use: nvidia
-	Kernel modules: nouveau, nvidia_drm, nvidia
-...
-```
-
 Kernel modules 详解：
 
 - **`nvidia`**: NVIDIA 官方的闭源核心驱动。它负责管理显卡的实际算力、渲染和大部分功能。
@@ -1755,7 +1857,12 @@ Kernel modules 详解：
 - **`nouveau`**:  Linux 社区开发的开源驱动。
 
 ```zsh
-sudo  dmesg | grep nvidia
+sudo dmesg | grep nvidia
+```
+
+```zsh
+❯ sudo lspci -nnv -s 02:00.0
+
 ```
 
 ### 安装nvidia驱动
@@ -1766,29 +1873,15 @@ sudo  dmesg | grep nvidia
 sudo pacman -Syu
 
 # nvidia-open 是内核模块
-# nvidia-utils 提供了驱动正常工作所需的一系列核心组件
+# nvidia-utils 提供了驱动正常工作所需的一系列核心组件，比如禁用开源驱动nouveau
 # lib32-nvidia-utils 解决游戏兼容性
-sudo pacman -S nvidia-open-dkms nvidia-utils lib32-nvidia-utils linux-headers --needed
-
-sudo pacman -R nvidia-open-dkms
-sudo pacman -S nvidia-dkms --needed
-
-add nvidia-settings to IgnorePkg? [y/N] 
-add opencl-nvidia to IgnorePkg? [y/N] 
-add libxnvctrl to IgnorePkg? [y/N] 
-```
-
-开启 DRM 模式设置：Wayland 必须在内核启动早期就认出 NVIDIA 驱动，否则会出现“黑屏”或“无法进入桌面”。
-
-```zsh
-# 编辑 mkinitcpio.conf
-sudo vim /etc/mkinitcpio.conf
-
-# 在 MODULES=(...) 括号内添加驱动名称：
-MODULES=(nvidia nvidia_modeset nvidia_uvm nvidia_drm)
-
-# 生成新的镜像
-sudo mkinitcpio -P
+sudo pacman -S \
+  nvidia-open \
+  opencl-nvidia \
+  nvidia-utils \
+  nvidia-settings \
+  lib32-nvidia-utils \
+  lib32-opencl-nvidia
 ```
 
 配置内核参数 (Wayland 核心配置)，这一步确保 Wayland 合成器（如 GNOME/KDE）能正确调用显卡，防止不接显卡时驱动卡死。
@@ -1801,6 +1894,97 @@ sudo vim /etc/default/grub
 GRUB_CMDLINE_LINUX_DEFAULT="loglevel=3 quiet nvidia-drm.modeset=1"
 
 # 更新 GRUB
+sudo grub-mkconfig -o /boot/grub/grub.cfg
+```
+
+“开机总是提示 `failed to start nvidia persistence daemon`”这一关键症状，问题的根源已经彻底清晰了：
+
+这是由于在 `mkinitcpio.conf` 的 `MODULES` 中配置了驱动早期加载，导致内核在**极早期**就去初始化 NVIDIA 驱动。然而，此时 Oculink 外接显卡的 PCIe 物理链路（甚至系统底层的 `systemd` 服务环境）**根本还没有完全就绪**。
+
+当驱动在最早期尝试与尚未完全准备好的外接硬件通信时，`nvidia-persistenced`（常驻守护进程）会因为硬件无响应而启动失败。更糟糕的是，这个服务的失败往往会产生锁死连锁反应，导致后续即使硬件物理上就绪了，驱动也拒绝再次探测它（也就是你遇到的冷启动概率性失效）。
+
+针对这种特殊的 Oculink 时序冲突，请按照以下步骤重新调整你的 Arch Linux 配置：
+
+```zsh
+# 编辑 mkinitcpio.conf
+sudo vim /etc/mkinitcpio.conf
+
+# 在 MODULES=(...) 括号内添加驱动名称：
+# MODULES=(nvidia nvidia_modeset nvidia_uvm nvidia_drm)
+
+# 重新生成 initramfs 镜像
+sudo mkinitcpio -P
+```
+
+添加专门应对开源驱动的“强制包容”参数（关键）。
+
+既然将驱动移到了正常的 systemd 阶段加载，我们需要告诉 `nvidia-open` 驱动：“即使觉得拓扑结构不对或硬件回应慢了，也必须强制接管。”
+
+编辑或创建 `/etc/modprobe.d/nvidia.conf`，写入或修改为以下内容：
+
+```conf
+# 禁止内核在开机时自动去碰 NVIDIA 驱动（改为手动/动态触发）
+blacklist nouveau
+blacklist nvidia
+blacklist nvidia_drm
+blacklist nvidia_modeset
+blacklist nvidia_uvm
+
+# 核心：允许加载未通过标准拓扑验证的外接 GPU 设备
+options nvidia NVreg_OpenRmEnableUnsupportedGpus=1
+
+# 优化外接电源管理，防止开机瞬间频繁休眠导致掉卡
+options nvidia NVreg_DynamicPowerManagement=0x02
+options nvidia_drm modeset=1
+```
+
+配置 Systemd 延迟守护进程启动。如果因为 Oculink 物理通电滞后，导致系统的 `nvidia-persistenced.service` 依然抢在显卡就绪前启动，我们可以为其增加一个延时缓冲，或者让其失败后自动无限重试。
+
+编辑该服务的 systemd 配置：
+
+```zsh
+sudo vim /etc/systemd/system/nvidia-load-delay.service
+```
+
+在弹出的编辑器中（注意要在 ### Lines below this comment... 上方的空白处）写入以下内容：
+
+```
+[Unit]
+Description=Oculink NVIDIA Driver Delay Loader
+After=systemd-modules-load.service basic.target
+Before=nvidia-persistenced.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+# 1. 硬性等待 5 秒，留足时间给 Oculink
+ExecStartPre=/usr/bin/sleep 5
+# 2. 强行刷新 PCI 硬件总线
+ExecStartPre=/usr/bin/sh -c "echo 1 > /sys/bus/pci/rescan"
+
+# 3. 干净加载模块
+ExecStart=/usr/bin/modprobe nvidia
+ExecStart=/usr/bin/modprobe nvidia_uvm
+ExecStart=/usr/bin/modprobe nvidia_modeset
+ExecStart=/usr/bin/modprobe nvidia_drm
+
+# 4. 拉起常驻进程
+ExecStartPost=/usr/bin/systemctl start nvidia-persistenced.service
+
+[Install]
+WantedBy=multi-user.target
+```
+
+刷新 systemd 缓存：
+
+```zsh
+sudo systemctl daemon-reload
+```
+
+[链接](https://www.google.com/search?sca_esv=098d5065355cb026&sxsrf=ANbL-n798RG_5dFSsdGzz0x26npp-nnRlw%3A1781492128744&ntc=1&sa=X&ved=2ahUKEwi-7vzhg46VAxUKTWcHHcWVAeoQoo4PegYIAggBEAI&biw=1241&bih=660&dpr=2.48&atvm=2&mtid=0Z8yaqLDJNCfseMPh-WWgQE&q=02%3A00.0+VGA+compatible+controller%3A+NVIDIA+Corporation+AD104+%5BGeForce+RTX+4070%5D+%28rev+a1%29+%28prog-if+00+%5BVGA+controller%5D%29%0A%09Subsystem%3A+NVIDIA+Corporation+Device+1875%0A%09Physical+Slot%3A+8%0A%09Flags%3A+fast+devsel%2C+IRQ+16%2C+IOMMU+group+20%0A%09Memory+at+86000000+%2832-bit%2C+non-prefetchable%29+%5Bsize%3D16M%5D%0A%09Memory+at+4010000000+%2864-bit%2C+prefetchable%29+%5Bsize%3D256M%5D%0A%09Memory+at+4020000000+%2864-bit%2C+prefetchable%29+%5Bsize%3D32M%5D%0A%09I%2FO+ports+at+3000+%5Bsize%3D128%5D%0A%09Expansion+ROM+at+87080000+%5Bdisabled%5D+%5Bsize%3D512K%5D%0A%09Capabilities%3A+%3Caccess+denied%3E%0A%09Kernel+modules%3A+nouveau%2C+nvidia_drm%2C+nvidia%0A%0A02%3A00.1+Audio+device%3A+NVIDIA+Corporation+AD104+High+Definition+Audio+Controller+%28rev+a1%29+%28prog-if+00+%5BHDA+compatible%5D%29%0A%09Subsystem%3A+NVIDIA+Corporation+Device+1875%0A%09Physical+Slot%3A+8%0A%09Flags%3A+bus+master%2C+fast+devsel%2C+latency+0%2C+IRQ+17%2C+IOMMU+group+20%0A%09Memory+at+87000000+%2832-bit%2C+non-prefetchable%29+%5Bsize%3D16K%5D%0A%09Capabilities%3A+%3Caccess+denied%3E%0A%09Kernel+driver+in+use%3A+snd_hda_intel%0A%09Kernel+modules%3A+snd_hda_intel+%E8%BF%99%E6%98%AFoculink%E5%A4%96%E6%8E%A5%E7%9A%84%E6%98%BE%E5%8D%A1%E4%BF%A1%E6%81%AF&mstk=AUtExfCDz_6y-qZXC9tWFfnP6mWe9zTWJ6vFFPy-2f5SnSjMLw8XKHBIbN1Y5RC40zLeMJ7OKKesGTcHD0aKKQWFoo5TiydSrQLnRtVB28nIIsG3OEaqVj3OLMDZ_ot7tJEzKCqYJOGcwwET3it3cAt2SO2lEmh8ueVGvJ1m4ZZdKm4nfVhmIgQVqdNoLhy8C0VB9PZPf36zen8_yftUua5xIDzwIaiqIfFIRCE5P5TLrYrxY8lKyW4wQ1P0tO-OdI5G2eGIl8LibA9VrFYT0cICmvf3tc9xwQ3cPAUikXbwhdM0toIXy42xHujKaIUkmpW30MAADMIph-8Yhg&csuir=1&lns_mode=cvst&udm=50)
+
+```zsh
+sudo mkinitcpio -P
 sudo grub-mkconfig -o /boot/grub/grub.cfg
 ```
 
@@ -1891,47 +2075,6 @@ sudo envycontrol --reset
 ```
 
 > 不知道为什么，我的笔记本开不了 `nvidia` 模式，一旦开启后，每次系统开机时，都会出现 Failed to start NVIDIA Persistance Daemon。虽然能进入桌面环境，但是无论有无外接显卡，都只能检测出核显。
-
-## gnome 插件商店
-
-- [ ] 触控板手势 touchegg，touchegg 是为 x11 设计的，wayland下几乎没法使用。
-
-```zsh
-pacman -S touchegg
-yay -S touche
-```
-
-tweaks
-
-桌面最小化最大化按钮消失：在 tweak 的Window-Title Buttons 中开启最大化和最小化。
-
-如果 tweak 没有提供设置选项，又不想在命令行中设置gnome，那么可以安装 `dconf-editor` 。
-
-```zsh
-pacman -S dconf-editor
-```
-
-- org.gnome.desktop.wm.keybindings 在 dconf-editor 中变成目录 `/org/gnome/desktop/wm/keybindings`。进入该目录后，找到 switch-applications 和 switch-windows，交换他们的默认值后，Alt+Tab 从切换应用变成了切换窗口。
-
-```bash
-# 为了使用 lsusb 和 evtest 命令
-sudo pacman -S usbutils evtestk
-
-# 为了使用 sudo libinput list-devices
-sudo pacman -S libinput-tools
-```
-安装 extension manager：安装后，软件内置了gnome插件商店
-
-```bash
-yay -S extension-manager-git
-```
-
-- AppIndicator.... 托盘图标
-- blur my shell毛玻璃特效
-- user theme,配合 tweaks,pacman -S gnome-tweaks........等等若干插件。
-
-- [archwiki安装指南](https://wiki.archlinux.org/title/Installation_guide)
-- [arttnba3 图文教程-附系统配置](https://arttnba3.cn/2023/09/25/DISTRO-0X00-INSTALL_ARCH_WINDOWS/)
 
 # 实用 Linux 命令
 
@@ -2044,6 +2187,15 @@ yay -Ps
 ```
 
 ## Paru（AUR 助手）
+
+安装 Paru ：
+
+```zsh
+sudo pacman -S --needed base-devel
+git clone https://aur.archlinux.org/paru.git
+cd paru
+makepkg -si
+```
 
 ```zsh
 # 安装包
@@ -2252,12 +2404,16 @@ tar -xvf 压缩包.tar.gz
 
 [项目地址](https://github.com/BurntSushi/ripgrep)
 
-## btop
+```zsh
+sudo pacman -S ripgrep
+```
+
+## btop nvtop
 
 [项目地址](https://github.com/aristocratos/btop)
 
 ```zsh
-sudo pacman -S btop
+sudo pacman -S btop nvtop
 ```
 
 > 卸载不了plasma-systemmonitor，[plasma-meta](https://archlinux.org/packages/extra/any/plasma-meta/) 捆绑安装该应用。
@@ -2269,13 +2425,52 @@ sudo pacman -S btop
 ## Codex
 
 ```zsh
-paru -S openai-codex-bin openai-codex-desktop
+paru -S openai-codex-bin
 ```
 
-登录账号：
+| 目的            | 命令                                                      | 平台 / 备注            |
+| ------------- | ------------------------------------------------------- | ------------------ |
+| 更新到最新版        | `codex update`                                          | 发行版支持自更新时可用        |
+| 登录（浏览器 OAuth） | `codex login`                                           | 默认方式，开浏览器登 ChatGPT |
+| 登录（设备码）       | `codex login --device-auth`                             | 无法开浏览器时用（如远程服务器）   |
+| 用 API Key 登录  | `printenv OPENAI_API_KEY \| codex login --with-api-key` |                    |
+| 查登录状态         | `codex login status`                                    | 已登录退出码为 `0`，适合脚本判断 |
+| 退出登录          | `codex logout`                                          | 清掉本地凭据             |
+| 体检诊断          | `codex doctor`                                          |                    |
+
+1. **浏览器账号登录**：
 
 ```zsh
-codex auth login
+codex login
+```
+
+2. **在服务器、Docker、SSH 这种没浏览器的环境登不了**，官方首选「设备码登录」（device code，Beta）：
+
+```zsh
+codex login --device-auth
+```
+
+它会给你一个链接和一次性验证码，你在**任意一台有浏览器的机器**上打开链接、输码、确认，终端这边就认证好了。这是远程登录最省事的路子。
+
+3. **拷贝认证缓存**：在一台有浏览器的机器上正常 `codex login`，确认生成了 `~/.codex/auth.json` ，再把它拷到目标机器的同一路径。比如通过 SSH
+
+```zsh
+ssh user@remote 'mkdir -p ~/.codex' 
+scp ~/.codex/auth.json user@remote:~/.codex/auth.json
+```
+
+| 你的环境               | 推荐登录方式                                |
+| ------------------ | ------------------------------------- |
+| 本机有浏览器             | 直接 `codex login`，浏览器走一遍               |
+| 远程 / 服务器 / 无图形界面   | `codex login --device-auth` 设备码       |
+| 设备码也不行             | 本机登好，拷贝 `~/.codex/auth.json` 过去       |
+| 公司有 TLS 代理 / 私有 CA | 先设 `CODEX_CA_CERTIFICATE` 指向 PEM 证书再登 |
+
+- **SSH 端口转发回调**：把 Codex 的本地回调端口（默认 `localhost:1455` ）从远程转发到本地，就能正常走浏览器流程：
+
+```zsh
+ssh -L 1455:localhost:1455 user@remote
+# 然后在这个 SSH 会话里跑 codex login，按提示在你本地浏览器打开地址即可
 ```
 
 Codex 常用命令：
@@ -2296,6 +2491,22 @@ codex --full-auto
 # 完全跳过所有授权，去掉所有沙箱限制
 codex --dangerously-bypass-approvals-and-sandbox
 ```
+
+## OpenCode
+
+[项目地址](https://github.com/anomalyco/opencode)
+
+```zsh
+paru -S opencode-bin
+```
+
+从现有安装中迁移到 DeepSeek：
+
+1. 执行 `opencode` 命令，启动 OpenCode
+2. 输入框中输入 `/connect`，然后输入 `deepseek` 并选择供应商
+3. 填入 DeepSeek API Key
+4. 选择 DeepSeek-V4-Pro 模型
+
 
 ## 云文件列表程序 OpenList
 
@@ -2355,6 +2566,7 @@ uv tool install --python 3.12 pdf2zh
 
 # 使用
 pdf2zh document.pdf -s deepseek -p 1-5 -li en -lo zh 
+pdf2zh document.pdf -s deepseek -li en -lo zh 
 ```
 
 参数说明：
@@ -2398,6 +2610,33 @@ codeburn models --top 10        # only the top 10 by cost
 codeburn models --format markdown      # paste-friendly markdown table
 codeburn models --task feature         # filter to feature-development work
 codeburn models --provider claude      # filter to one provider
+```
+
+## 模糊路径跳转工具 zoxide
+
+[项目地址](https://github.com/ajeetdsouza/zoxide)
+
+```zsh
+sudo pacman -S zoxide
+```
+
+它会记忆你经常去的目录，你只需要输入 `z log` 就能自动识别并跳转到 `/var/log`。
+
+用法：
+
+```zsh
+z foo              # cd into highest ranked directory matching foo
+z foo bar          # cd into highest ranked directory matching foo and bar
+z foo /            # cd into a subdirectory starting with foo
+
+z ~/foo            # z also works like a regular cd command
+z foo/             # cd into relative path
+z ..               # cd one level up
+z -                # cd into previous directory
+
+zi foo             # cd with interactive selection (using fzf)
+
+z foo<SPACE><TAB>  # show interactive completions (bash 4.4+/fish/zsh only)
 ```
 
 # 维护软件包
@@ -2448,3 +2687,35 @@ chmod 600 ~/.ssh/config
 
 将项目源码或第三方 `.deb` 包转化为通过 `yay` 安装的 AUR 软件包，其**核心是编写一个 `PKGBUILD` 脚本文件**。`yay` 本质上就是通过读取 `PKGBUILD` 中的指令，自动完成下载、解压、编译、提取并打包的过程。
 
+## 给 PKGBUILD 打补丁
+
+AUR 中的 openai-codex-desktop 安装并打开后，屏幕会诡异的闪烁。这里尝试打上 AUR Comment 中提供的补丁。
+
+因为 openai-codex-desktop 是通过 paru 安装的，所以先来到 openai-codex-desktop 的下载目录：
+
+```zsh
+cd ~/.cache/paru/clone/openai-codex-desktop
+```
+
+先确认 patch 能否应用：
+
+```zsh
+patch --dry-run -p1 < ../openai-codex-desktop.patch
+```
+
+如果没有报错，正式应用：
+
+```zsh
+patch -p1 < ../openai-codex-desktop.patch
+```
+
+然后构建、安装：
+
+```
+makepkg -si
+```
+
+- `-s`：自动安装缺失的构建依赖；
+- `-i`：构建完成后安装生成的包。
+
+以后包更新时，AUR 的 PKGBUILD 版本或代码结构变化，patch 可能会冲突；这时需要重新根据新版 PKGBUILD 调整 patch 。
